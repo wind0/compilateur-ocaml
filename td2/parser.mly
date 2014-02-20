@@ -1,12 +1,12 @@
 %{
     open Printf
-}%
+%}
 
 %token <int32> INTC
 %token <string> STRINGC
 %token <bool> BOOLC
 %token <string> ID
-%token INTEGER BOOLEAN
+%token INTEGER BOOLEAN ARRAY
 %token VAR PROGRAM BEGIN END
 %token PLUS MINUS TIMES DIV MOD
 %token NOT AND OR NIL
@@ -19,7 +19,7 @@
 %token RECORD
 %token FUNCTION PROCEDURE
 
-%start<unit> PROGRAM
+%start <unit> program
 
 
 %left OR
@@ -51,17 +51,45 @@ declaration:
 
 var:
 	VAR
-	v = (declaration)+
+	v = nonempty_list(declaration)
 	{ sprintf "%s\n" v}
+
+binop:
+	|PLUS {"+"}
+	|MINUS {"-"}
+	|TIMES {"*"}
+	|DIV {"/"}
+	|MOD {"%"}
+
+arithmetic_operation:
+	|i = ID {i}
+	|i = INTC {sprintf "%d" i}
+	|a = arithmetic_operation b = binop c = arithmetic_operation {sprintf "%s %s %s" a b c}
+	|LPAR a = arithmetic_operation RPAR {sprintf "( %s )" a}
+
+binlogop:
+	|AND {"&&"}
+	|OR {"||"}
+	|LT {"<"}
+	|GT {">"}
+	|GE {">="}
+	|LE {"<="}
+	|EQ {"=="}
+	|NEQ {"!="}
+
+operation:
+	|NOT (LPAR)? a = operation (RPAR)? {sprintf "! %s" a}
+	|arithmetic_operation binlogop arithmetic_operation {}
+	(*|b = BOOLC {if b then true else false}
+	|i = ID {i}*)
+
+paramult:
+	SEMICOLON id_list COLON typ {}
 
 parametres:
 	| LPAR RPAR { sprintf "()" }
 	| LPAR i = id_list COLON t = typ RPAR {sprintf "( %s : %s )" i t}
-	| LPAR i = id_list COLON t = typ (SEMICOLON i2 = id_list COLON t2 = typ)+ RPAR  {sprintf "( %s : %s ; %s : %s )" i t i2 t2} 
-
-functions_and_procs:
-	f = (function | procedure)+
-	{sprintf "%s" f} 
+	| LPAR i = id_list COLON t = typ nonempty_list(paramult) RPAR  {sprintf "( %s : %s)" i t} 
 
 procedure:
 	PROCEDURE i = ID
@@ -69,10 +97,12 @@ procedure:
 	con = constants SEMICOLON
 	var = variables SEMICOLON
 	func = functions_and_procs
-	bloc = block
-	{ sprintf "id %s para %s;\n con %s;\n var %s;\n func %s\n bloc %s\n" i para con var func bloc}
+	BEGIN
+		bloc = block
+	END
+	{ sprintf "id %s para %s;\n con %s;\n var %s;\n func %s\n begin \n bloc %s\n end \n" i para con var func bloc}
 
-function:
+functions:
 	FUNCTION i = ID 
 	para = parametres COLON
 	t = typ SEMICOLON
@@ -83,18 +113,21 @@ function:
 		bloc = block
 		ret = ID CCOLONEQ var
 	END
-	{ if i == ret then sprintf "id %s para %s: t %s;\n con %s;\n var %s;\n func %s\n bloc %s\n" i para t con var func bloc else failwith "Woop woop"}	
+	{ if i == ret then sprintf "id %s para %s: t %s;\n con %s;\n var %s;\n func %s\n begin\n bloc %s\n end\n" i para t con var func bloc else failwith "Woop woop"}	
+
+functions_and_procs:
+	f = nonempty_list(functions , procedure){sprintf "%s" f} 
 
 block:
-	blo = (init | blockimbr | conditionnal | boucle | appelfunction)*
-	{ sprintf "begin %s end" blo}	
+	blo = list(init , blockimbr , conditionnal , boucle , appelfunction)
+	{blo}	
 
 blockimbr:
 	BEGIN
 	blo = block
 	END
 	SEMICOLON
-	{ sprintf "%s ;" blo}
+	{ sprintf "begin \n %s end;\n" blo}
 
 
 (*Le grand final*)
@@ -103,7 +136,9 @@ program:
 	con = constants
 	var = variables
 	func = functions_and_procs
-	bloc = block
+	BEGIN
+		bloc = block
+	END
 	DOT {
 		printf "My name is %s\n My vars are %s\n My functions and procs are %s\n I do %s\n" i con var func bloc
 	}
