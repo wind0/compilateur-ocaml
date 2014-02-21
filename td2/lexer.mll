@@ -14,8 +14,8 @@ let ws = [' ' '\t']
 rule token = parse
 |newline {token lexbuf}
 |ws+ {token lexbuf}
-|integer as i {try printf "%s" i with _ -> failwith "fuck"}
-|identifier as id { ID(*try printf "%s" (Lexing.lexeme lexbuf) with _ -> failwith "I tried..."*)}
+|integer as i { INTC (Int32.of_string i) }
+|identifier as id { ID id }
 |"true" { BOOLC true}
 |"false" { BOOLC false }
 |"var" { VAR }
@@ -44,7 +44,6 @@ rule token = parse
 |"then" { THEN }
 |"(" { LPAR }
 |")" { RPAR }
-|"writeln" { WRITELN }
 |"integer" { INTEGER }
 |"boolean" { BOOLEAN }
 |"array" { ARRAY }
@@ -67,10 +66,11 @@ rule token = parse
 |"while" { WHILE }
 |"function" { FUNCTION }
 |"procedure" { PROCEDURE } 
-|"'" {stringc lexbuf}
+|"'"([^''']* as s)"'" {STRINGC s}
 |eof {failwith "I tried"}
 |_ {failwith "Oh my"}
 
+(*
 and stringc = parse
-|'\'' {()}
-|(letter | digit | ws | newline)+ as content {try printf "%s" content with _ -> failwith "I dun goofed"}
+|'\'' { () }
+|(letter | digit | ws | newline)+ as content {try printf "%s" content with _ -> failwith "I dun goofed"}*)
