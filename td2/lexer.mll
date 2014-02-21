@@ -1,6 +1,7 @@
 {
   open Lexing
   open Printf
+  open Parser
 }
 
 let digit = ['0'-'9']
@@ -18,6 +19,7 @@ rule token = parse
 |"true" { BOOLC true}
 |"false" { BOOLC false }
 |"var" { VAR }
+|"const" { CONST }
 |"program" { PROGRAM }
 |"begin" { BEGIN }
 |"end" { END }
