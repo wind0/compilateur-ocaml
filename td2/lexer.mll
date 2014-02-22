@@ -12,7 +12,7 @@ let newline = ('\010'|'\013'|"\013\010")
 let ws = [' ' '\t']
 
 rule token = parse
-|newline {token lexbuf}
+newline {token lexbuf}
 |ws+ {token lexbuf}
 |integer as i { INTC (Int32.of_string i) }
 |identifier as id { ID id }
