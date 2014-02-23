@@ -109,29 +109,9 @@ const_decl:
 constants:
 	CONST
 	cons = nonempty_list(const_decl)
-	{sprintf " %s " (String.concat "" cons)}
+	{sprintf " %s " (String.concat "" cons)}		
 
-procedure:
-	PROCEDURE i = ID
-	para = parametres SEMICOLON
-	con = option(constants)
-	vars = option(var)
-	func = option(functions_and_procs)
-	bloc = block_ou_blockimbr
-	SEMICOLON
-	{ 	let machin = fun truc ->
-		match truc with
-		| None -> ""
-		| Some x -> x
-		in
-		let con2 = machin con
-		and vars2 = machin vars 
-		and func2 = machin func
-		in   
-		sprintf "id %s para %s;\n con %s;\n var %s;\n func %s\n begin \n bloc %s\n end \n" 
-		i para con2 vars2 func2 bloc}
-
-functions:
+functions_and_procs:
 	FUNCTION i = ID 
 	para = parametres SEMICOLON
 	con = option(constants)
@@ -154,14 +134,27 @@ functions:
 		and func2 = machin func
 		in 
 		sprintf "id %s para %s: t %s;\n con %s;\n var %s;\n func %s\n begin\n bloc %s\n returns %s end\n" 
-		i para t con2 vars2 func2 bloc v}	
+		i para t con2 vars2 func2 bloc v}
 
-option_funcproc:
-	func = functions {sprintf "%s" func}
-	| pro = procedure {sprintf "%s" pro}
+	|PROCEDURE i = ID
+	para = parametres SEMICOLON
+	con = option(constants)
+	vars = option(var)
+	func = option(functions_and_procs)
+	bloc = block_ou_blockimbr
+	SEMICOLON
+	{ 	let machin = fun truc ->
+		match truc with
+		| None -> ""
+		| Some x -> x
+		in
+		let con2 = machin con
+		and vars2 = machin vars 
+		and func2 = machin func
+		in   
+		sprintf "id %s para %s;\n con %s;\n var %s;\n func %s\n begin \n bloc %s\n end \n" 
+		i para con2 vars2 func2 bloc}
 
-functions_and_procs:
-	f = list(option_funcproc){sprintf "%s" (String.concat "" f)} 
 
 appelfunction:
 	i = ID LPAR id = id_list RPAR {sprintf "%s ( %s )" i id}
@@ -212,7 +205,7 @@ ini = init {sprintf "%s" ini}
 
 ensemble_instru:
 	instr = nonempty_list(option_block)
-	{sprintf "begin\n %s \n end\n" (String.concat "" instr)}
+	{(String.concat "" instr)}
 
 instru_ou_blockimbr:
 	e = ensemble_instru {e}
