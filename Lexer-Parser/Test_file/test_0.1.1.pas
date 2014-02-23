@@ -1,0 +1,3 @@
+program Bonjour ;
+begin
+end.

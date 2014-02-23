@@ -1,0 +1,18 @@
+Version prototype du projet de Compilation.
+
+Dans cette version, le parser et le lexer seront recréés au fur et à mesure mais avec des tests fonctionnels.
+
+
+Version initial :
+	- Reprise des fichiers main.ml et compil de la version td2
+	- Création des fichiers lexer.mll et parser.mly vides.
+
+
+Version 0.1.0 :
+	- PARSER : Structure d'un programme PASCAL sans aucun paramètre fonctionnelle
+	- LEXER : Token ID, PROGRAM, BEGIN, END, DOT, SEMICOLON Ajoutés
+
+Version 0.1.1 :	
+ 
+
+
