@@ -29,7 +29,7 @@
 %nonassoc LT GT LE GE EQ NEQ
 %left PLUS MINUS
 %left TIMES DIV MOD
-%nonassoc LBR
+%nonassoc LBR 
 %nonassoc THEN
 %nonassoc ELSE
 
@@ -117,9 +117,7 @@ procedure:
 	con = option(constants)
 	vars = option(var)
 	func = option(functions_and_procs)
-	 BEGIN
-		bloc = block
-	END
+	bloc = block_ou_blockimbr
 	SEMICOLON
 	{ 	let machin = fun truc ->
 		match truc with
@@ -140,10 +138,10 @@ functions:
 	t = typ SEMICOLON
 	vars = option(var)
 	func = option(functions_and_procs)
-	BEGIN
-		bloc = block
-		ID CCOLONEQ v = var
-	END
+
+	bloc = block_ou_blockimbr
+	ID CCOLONEQ v = var
+
 	SEMICOLON
 	{
 		let machin = fun truc ->
@@ -171,8 +169,8 @@ appelfunction:
 ifthen:
 	IF ope = operation THEN bl = option_block {sprintf "if %s then %s" ope bl}
 	| IF ope = operation THEN bl1 = option_block ELSE bl2 = option_block {sprintf "if %s then %s else %s" ope bl1 bl2}
-	| IF ope = operation THEN BEGIN bl = block END {sprintf "if %s then %s" ope bl}
-	| IF ope = operation THEN BEGIN bl1 = block END ELSE BEGIN bl2 = block END {sprintf "if %s then %s else %s" ope bl1 bl2}
+	| IF ope = operation THEN bl = block_ou_blockimbr {sprintf "if %s then %s" ope bl}
+	| IF ope = operation THEN bl1 = block_ou_blockimbr ELSE bl2 = block_ou_blockimbr {sprintf "if %s then %s else %s" ope bl1 bl2}
 
 listswitch:
  	 i = INTC COLON  o = option_block {sprintf "%li : %s" i o }
@@ -184,7 +182,7 @@ listswitchlist:
 
 
 switch:
-	 CASE i = ID OF l = listswitchlist END {sprintf "case %s of %s end\n" i l}
+	CASE i = ID OF l = listswitchlist END {sprintf "case %s of %s end\n" i l}
 
 conditionnal:
 	i = ifthen { i }
@@ -192,37 +190,52 @@ conditionnal:
 
 whiledo:
 	 WHILE o = operation DO  o2 = option_block {sprintf "while %s do\n %s\n" o o2}
-	| WHILE o = operation DO BEGIN b = block END {sprintf "while %s do\n begin\n %s\n end\n" o b}
+	| WHILE o = operation DO b = block_ou_blockimbr {sprintf "while %s do\n %s\n" o b}
 
 fordo:
 	 FOR i = ID COLONEQ i2 = idOrIntc DOWNTO i3 = idOrIntc DO o = option_block {sprintf "for %s := %s downto %s do\n %s\n" i i2 i3 o}
-	| FOR i = ID COLONEQ i2 = idOrIntc DOWNTO i3 = idOrIntc DO BEGIN b = block END {sprintf "for %s := %s downto %s do\n begin\n %s\n end\n" i i2 i3 b}
+	| FOR i = ID COLONEQ i2 = idOrIntc DOWNTO i3 = idOrIntc DO b = block_ou_blockimbr {sprintf "for %s := %s downto %s do\n %s\n" i i2 i3 b}
 	| FOR i = ID COLONEQ i2 = idOrIntc TO i3 = idOrIntc DO o = option_block {sprintf "for %s := %s to %s do\n %s\n" i i2 i3 o}
-	| FOR i = ID COLONEQ i2 = idOrIntc TO i3 = idOrIntc DO BEGIN b = block END {sprintf "for %s := %s to %s do\n begin\n %s\n end\n" i i2 i3 b}
+	| FOR i = ID COLONEQ i2 = idOrIntc TO i3 = idOrIntc DO b= block_ou_blockimbr {sprintf "for %s := %s to %s do\n %s\n \n" i i2 i3 b}
 
 boucle:
 	w = whiledo {w}
 	|f = fordo {f}
 
+(* mon nom est instruction *)
 option_block:
 ini = init {sprintf "%s" ini}
-|bloc = blockimbr {sprintf "%s" bloc}
+(*|bloc = blockimbr {sprintf "%s" bloc} *)
 |cond = conditionnal {sprintf "%s" cond}
 |bouc = boucle {sprintf "%s" bouc}
 |appel = appelfunction {sprintf "%s" appel}
 
+ensemble_instru:
+	instr = nonempty_list(option_block)
+	{sprintf "begin\n %s \n end\n" (String.concat "" instr)}
 
+instru_ou_blockimbr:
+	e = ensemble_instru {e}
+	| bloimb = blockimbr {bloimb}
+
+(* block unique *)
 block:
- blo = nonempty_list(option_block)
-	{sprintf "begin\n %s \n end\n" (String.concat "" blo)}	
+	BEGIN
+	e = ensemble_instru
+ 	END
+	{sprintf "begin\n %s \n end\n" e}
 
+(* block imbrique pouvant contenir des blockimbrique ou des instructions*)
 blockimbr:
 	BEGIN
-	blo = block
+	blo = instru_ou_blockimbr
 	END
 	SEMICOLON
 	{ sprintf "begin \n %s end;\n" blo}
 
+block_ou_blockimbr:
+	b = block {b}
+	| bimr = blockimbr {bimr}
 
 (*Le grand final*)
 program:
@@ -230,9 +243,7 @@ program:
 	con = option(constants)
 	vars = option(var)
 	func = option(functions_and_procs)
-	BEGIN
-		bloc = block
-	END
+	bloc = block_ou_blockimbr
 	DOT {
 		let machin = fun truc ->
 		match truc with
