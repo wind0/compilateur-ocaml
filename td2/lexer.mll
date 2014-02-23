@@ -2,6 +2,14 @@
   open Lexing
   open Printf
   open Parser
+  open Error
+  let update_loc lexbuf =
+    let pos = lexbuf.lex_curr_p in
+    lexbuf.lex_curr_p <- { pos with
+      pos_lnum = pos.pos_lnum + 1;
+      pos_bol = pos.pos_cnum;
+    }
+
 }
 
 let digit = ['0'-'9']
@@ -12,9 +20,9 @@ let newline = ('\010'|'\013'|"\013\010")
 let ws = [' ' '\t']
 
 rule token = parse
-newline {token lexbuf}
+newline {update_loc lexbuf; token lexbuf}
 |ws+ {token lexbuf}
-|integer as i { INTC (Int32.of_string i) }
+|integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
 |identifier as id { ID id }
 |"true" { BOOLC true}
 |"false" { BOOLC false }
@@ -67,8 +75,8 @@ newline {token lexbuf}
 |"function" { FUNCTION }
 |"procedure" { PROCEDURE } 
 |"'"([^''']* as s)"'" {STRINGC s}
-|eof {failwith "I tried"}
-|_ {failwith "Oh my"}
+|eof {Error.error lexbuf "Unexpected EOF"}
+|_ {Error.error lexbuf "Unexpected character"}
 
 (*
 and stringc = parse
