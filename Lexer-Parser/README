@@ -12,7 +12,38 @@ Version 0.1.0 :
 	- PARSER : Structure d'un programme PASCAL sans aucun paramètre fonctionnelle
 	- LEXER : Token ID, PROGRAM, BEGIN, END, DOT, SEMICOLON Ajoutés
 
-Version 0.1.1 :	
- 
+Version 0.1.2 :	
+ 	- jeu test pour unsigned_constant et constant
+
+Version 0.1.3 :	
+	- jeu de test pour simple_type 
+
+	!! fait interessant : !!
+pour la regle suivante : 
+
+program:
+	PROGRAM i = ID SEMICOLON
+	BEGIN
+	INTEGER
+	END
+	DOT
+
+Le programme suivant n'est pas reconnu : 
+
+program Bonjour ;
+begin
+integer
+end.
+
+ALORS QU'IL DEVRAI L'ETRE !!! 
+Raison : Le lexem.mll ! 
+Pas reconnu : 
+|identifier as id { ID id }
+|"integer" { INTEGER }
+|"boolean" { BOOLEAN }
 
 
+reconnu : 
+|"integer" { INTEGER }
+|"boolean" { BOOLEAN }
+|identifier as id { ID id }
