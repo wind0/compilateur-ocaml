@@ -9,5 +9,5 @@ ocamlc -c parser.mli
 ocamlc -c lexer.ml 
 ocamlc -c parser.ml 
 ocamlc -c main.ml 
-mv *.cm* ./module/
-ocamlc -o main -I module
+mv *.cm* module
+ocamlc -o main -I module error.cmo lexer.cmo parser.cmo main.cmo
