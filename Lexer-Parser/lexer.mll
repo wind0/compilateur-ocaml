@@ -22,6 +22,7 @@ newline {token lexbuf}
 | "program" { PROGRAM }
 | "begin" { BEGIN }
 | "end" { END }
+|":" { COLON }
 | ";" { SEMICOLON }
 | "." { DOT }
 |"record" { RECORD }
@@ -30,6 +31,7 @@ newline {token lexbuf}
 |"boolean" { BOOLEAN }
 |"nil" { NIL }
 |"of" { OF }
+|"case" { CASE }
 |identifier as id { ID id }
 |integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
 |"'" {SIMPLECOTE}
