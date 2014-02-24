@@ -1,5 +1,11 @@
 %{
     open Printf
+
+    let extract = fun rechercher ->
+	match rechercher with
+	| None -> ""
+	| Some x -> x
+
 %}
 
 /* Token */
@@ -103,11 +109,6 @@ recur_line_case_field_list:
 field_list:
 	i=ID r=recur_id* COLON t=type_automate sfl=semicolon_field_list?
 	{
-		let extract = fun rechercher ->
-		match rechercher with
-		| None -> ""
-		| Some x -> x
-		in
 		let sstr = extract sfl 
 		in
 		sprintf "%s %s : %s %s" i (String.concat "" r) t sstr}
@@ -185,22 +186,14 @@ parameter_list:
 
 procedure:
 	PROCEDURE i = ID pa = parameter_list? SEMICOLON b = block SEMICOLON
-	{let extract = fun rechercher ->
-		match rechercher with
-		| None -> ""
-		| Some x -> x
-	in
+	{
 		let para = extract pa
 	in
 	sprintf "procedure %s %s ; %s ;" i para b}	
 
 function_bl:
 	FUNCTION i = ID pa = parameter_list? COLON t = type_identifier SEMICOLON b = block SEMICOLON
-	{let extract = fun rechercher ->
-		match rechercher with
-		| None -> ""
-		| Some x -> x
-	in
+	{
 		let para = extract pa
 	in
 	sprintf "function %s %s : %s ; %s ;" i para t b}
@@ -221,11 +214,7 @@ block:
 		(*t = type_automate* *)
 		(*f = field_list* *)
 	END
-	{ 	let extract = fun rechercher ->
-			match rechercher with
-			| None -> ""
-			| Some x -> x
-		in
+	{ 
 			let cons = extract bc
 		in	
 			let types = extract bt
