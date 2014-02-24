@@ -3,6 +3,13 @@
   open Printf
   open Parser
   open Error
+  
+   let update_loc lexbuf =
+    let pos = lexbuf.lex_curr_p in
+    lexbuf.lex_curr_p <- { pos with
+      pos_lnum = pos.pos_lnum + 1;
+      pos_bol = pos.pos_cnum;
+    }
 }
 
 let digit = ['0'-'9']
@@ -17,7 +24,7 @@ rule token = parse
 (* Premier TOKEN pour un programme vide PASCAL *)
 (* ordre extrement important !!!!! *)
 
-newline {token lexbuf}
+newline {update_loc lexbuf; token lexbuf}
 |ws+ {token lexbuf}
 | "program" { PROGRAM }
 | "begin" { BEGIN }
