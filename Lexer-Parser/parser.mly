@@ -56,10 +56,11 @@ constant:
 
 (* automate : simple type *)
 recur_id:
-	COMA id = ID r=recur_id* {sprintf ", %s %s" id (String.concat "" r)}
+	COMA id = ID {sprintf ", %s" id}
 
 para_recur_id:
 	LPAR i = ID r = recur_id*  RPAR {sprintf "(%s %s)" i (String.concat "" r)}
+
 
 type_identifier:
 	INTEGER {sprintf "integer "} | BOOLEAN {sprintf "boolean "}
@@ -71,7 +72,7 @@ simple_type:
 
 (* automate : type *)
 recur_type_array:
-	COMA id = simple_type r=recur_type_array* {sprintf ", %s %s" id (String.concat "" r)}
+	COMA id = simple_type {sprintf ", %s" id }
 
 array_para_recur_simple_type:
 	ARRAY LBR i = simple_type r = recur_type_array* RBR OF typ=type_automate {sprintf "array [%s %s] of %s" i (String.concat "" r) typ}
@@ -81,7 +82,7 @@ type_automate:
 	| a = array_para_recur_simple_type {a}
 	| RECORD f =field_list END {sprintf "record %s end" f}
 
-(* TODO *)
+(* TODO*)
 (* automate : field list *)
 field_list:
 	i = ID {i}
@@ -91,8 +92,8 @@ program:
 	BEGIN
 
 	(*du debug, pour le moment*)
-	(*b = unsigned_constant* *)
-	(* c = constant* *)
+	(* b = unsigned_constant* *)
+	(*c = constant* *)
 	(*s = simple_type* *)
 	t = type_automate*
 	END
