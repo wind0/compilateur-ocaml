@@ -11,6 +11,9 @@
 %token COMA DOUBLEDOT
 %token RPAR LPAR
 %token INTEGER BOOLEAN
+%token LBR RBR
+%token ARRAY OF
+%token RECORD
 
 /* Start du parser */
 %start program
@@ -66,6 +69,22 @@ simple_type:
 	| p = para_recur_id	{p}
 	| c1 = constant DOUBLEDOT c2 = constant {sprintf " %s .. %s" c1 c2}
 
+(* automate : type *)
+recur_type_array:
+	COMA id = simple_type r=recur_type_array* {sprintf ", %s %s" id (String.concat "" r)}
+
+array_para_recur_simple_type:
+	ARRAY LBR i = simple_type r = recur_type_array* RBR OF typ=type_automate {sprintf "array [%s %s] of %s" i (String.concat "" r) typ}
+
+type_automate:
+	s = simple_type {sprintf "%s\n " s}
+	| a = array_para_recur_simple_type {a}
+	| RECORD f =field_list END {sprintf "record %s end" f}
+
+(* TODO *)
+(* automate : field list *)
+field_list:
+	i = ID {i}
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
@@ -74,7 +93,8 @@ program:
 	(*du debug, pour le moment*)
 	(*b = unsigned_constant* *)
 	(* c = constant* *)
-	s = simple_type*
+	(*s = simple_type* *)
+	t = type_automate*
 	END
 	DOT
 	(*{
@@ -87,6 +107,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n begin\n %s\n end.\n\n" i (String.concat "" s)}
+	{printf "program %s;\n begin\n %s\n end.\n\n" i (String.concat "" t)}
 
 %%

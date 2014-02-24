@@ -19,16 +19,19 @@ rule token = parse
 
 newline {token lexbuf}
 |ws+ {token lexbuf}
-|integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
 | "program" { PROGRAM }
 | "begin" { BEGIN }
 | "end" { END }
 | ";" { SEMICOLON }
 | "." { DOT }
+|"record" { RECORD }
+|"array" { ARRAY }
 |"integer" { INTEGER }
 |"boolean" { BOOLEAN }
-|identifier as id { ID id }
 |"nil" { NIL }
+|"of" { OF }
+|identifier as id { ID id }
+|integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
 |"'" {SIMPLECOTE}
 |"+" {UNARYPLUS}
 |"-" {UNARYMINUS}
@@ -36,6 +39,8 @@ newline {token lexbuf}
 |"(" { LPAR }
 |")" { RPAR }
 |".." {DOUBLEDOT}
+|"[" { LBR }
+|"]" { RBR }
 
 (* Token pour ajouter des VAR aux programmes *)
 
