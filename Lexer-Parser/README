@@ -55,3 +55,12 @@ Version 0.1.4 :
 
 Version 0.1.5 :	
 	- field_list automate
+
+Version 0.2.0 :
+	- Gestion total d'initialisation de divers paramètres d'un programme PASCAL :
+		- CONST
+		- TYPE
+		- VAR
+		- PROCEDURE
+		- FUNCTION
+	- Necessite d'autres testes

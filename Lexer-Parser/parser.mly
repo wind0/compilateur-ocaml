@@ -6,8 +6,8 @@
 %token <string> ID
 %token <int32> INTC
 %token PROGRAM BEGIN END SEMICOLON DOT
-%token SIMPLECOTE NIL
-%token PLUS MINUS
+%token SIMPLECOTE NIL EQ
+%token MINUS PLUS
 %token COMA DOUBLEDOT
 %token RPAR LPAR
 %token INTEGER BOOLEAN
@@ -16,6 +16,7 @@
 %token RECORD
 %token COLON
 %token CASE
+%token VAR CONST TYPE PROCEDURE FUNCTION
 
 /* Start du parser */
 %start program
@@ -129,18 +130,112 @@ variable :
 	i = ID b=boucle_intern* {sprintf "%s %s" i, (String.concat "" b)}
 
 *)
+
+
+(* BLOCK *)
+
+
+(*Constante*)
+init_const:
+	i = ID EQ c = constant SEMICOLON 
+	{sprintf "%s = %s ;" i c}
+
+block_const:
+	CONST
+	i = init_const+
+	{sprintf "const\n %s" (String.concat "" i)}
+
+
+(*Type*)
+init_type:
+	i = ID EQ t = type_automate SEMICOLON
+	{sprintf "%s = %s ;" i t}
+
+block_type:
+    TYPE
+    i = init_type+
+    {sprintf "type\n %s" (String.concat "" i)}
+
+
+(*Var*)
+mult_var:
+	COMA i = ID {sprintf ", %s" i}
+
+init_var:
+	i = ID m = mult_var* COLON t = type_automate SEMICOLON {sprintf "%s %s : %s ;" i (String.concat "" m) t}
+
+block_var:
+	VAR
+	i = init_var+
+	{sprintf "var\n %s" (String.concat "" i)}
+
+
+(*Procedure et Function*)
+mult_parameter:
+	SEMICOLON p = parameter_list {sprintf "; %s" p}
+
+parameter_list:
+	LPAR i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* RPAR {sprintf "( %s %s : %s %s )" i (String.concat "" m) t (String.concat "" mp)}
+	| LPAR FUNCTION i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* RPAR {sprintf "( function %s %s : %s %s )" i (String.concat "" m) t (String.concat "" mp)}
+	| LPAR VAR i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* RPAR {sprintf "( var %s %s : %s %s )" i (String.concat "" m) t (String.concat "" mp)}
+	| LPAR PROCEDURE i = ID m = mult_var* mp = mult_parameter* RPAR {sprintf "( procedure %s %s %s )" i (String.concat "" m) (String.concat "" mp)}
+
+procedure:
+	PROCEDURE i = ID pa = parameter_list? SEMICOLON b = block SEMICOLON
+	{let extract = fun rechercher ->
+		match rechercher with
+		| None -> ""
+		| Some x -> x
+	in
+		let para = extract pa
+	in
+	sprintf "procedure %s %s ; %s ;" i para b}	
+
+function_bl:
+	FUNCTION i = ID pa = parameter_list? COLON t = type_identifier SEMICOLON b = block SEMICOLON
+	{let extract = fun rechercher ->
+		match rechercher with
+		| None -> ""
+		| Some x -> x
+	in
+		let para = extract pa
+	in
+	sprintf "function %s %s : %s ; %s ;" i para t b}
+
+(* Main block *)
+
+block:
+	bc = block_const?
+	bt = block_type?
+	bv = block_var?
+	pro = procedure*
+	func = function_bl*
+	BEGIN
+		(*du debug, pour le moment*)
+		(* b = unsigned_constant* *)
+		(*c = constant* *)
+		(*s = simple_type* *)
+		(*t = type_automate* *)
+		(*f = field_list* *)
+	END
+	{ 	let extract = fun rechercher ->
+			match rechercher with
+			| None -> ""
+			| Some x -> x
+		in
+			let cons = extract bc
+		in	
+			let types = extract bt
+		in
+			let vars = extract bv
+		in
+		sprintf "%s \n %s \n %s \n %s \n %s \n begin\n end" cons types vars (String.concat "" pro) (String.concat "" func) }
+
+
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
-	BEGIN
-
-	(*du debug, pour le moment*)
-	(* b = unsigned_constant* *)
-	c = constant*
-	(*s = simple_type* *)
-	(*t = type_automate* *)
-	(*f = field_list* *)
-	END
+		b = block
 	DOT
 	(*{
 		let extract = fun rechercher ->
@@ -152,6 +247,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n begin\n %s\n end.\n\n" i (String.concat "" c)}
+	{printf "program %s;\n %s.\n\n" i b}
 
 %%
