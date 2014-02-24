@@ -32,11 +32,11 @@ newline {token lexbuf}
 |"nil" { NIL }
 |"of" { OF }
 |"case" { CASE }
+|"+" {PLUS}
+|"-" {MINUS}
 |identifier as id { ID id }
 |integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
 |"'" {SIMPLECOTE}
-|"+" {UNARYPLUS}
-|"-" {UNARYMINUS}
 |"," {COMA}
 |"(" { LPAR }
 |")" { RPAR }

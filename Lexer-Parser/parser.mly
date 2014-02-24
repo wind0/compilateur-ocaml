@@ -7,7 +7,7 @@
 %token <int32> INTC
 %token PROGRAM BEGIN END SEMICOLON DOT
 %token SIMPLECOTE NIL
-%token UNARYPLUS UNARYMINUS
+%token PLUS MINUS
 %token COMA DOUBLEDOT
 %token RPAR LPAR
 %token INTEGER BOOLEAN
@@ -21,7 +21,9 @@
 %start program
 %type <unit> program
 
+%nonassoc unary_minus unary_plus
 /*
+
 %nonassoc UNARYPLUS UNARYMINUS
 %left COMA
 %left LPAR
@@ -37,23 +39,23 @@ unsigned_constant :
 
 /* automate : constant */
 signe : 
-	UNARYPLUS {sprintf "+"}
-	| UNARYMINUS {sprintf "-"}
+	PLUS {sprintf "+"}
+	| MINUS {sprintf "-"}
 
 constant_id_OR_unsigned_number:
 	i = ID {i}
 	|integ = INTC {sprintf " %li" integ}
 
+unary_signe_with_constant_id_OR_unsigned_number :
+	PLUS uc = constant_id_OR_unsigned_number %prec unary_plus 
+		{ sprintf "+ %s" uc}
+	| MINUS uc2 = constant_id_OR_unsigned_number %prec unary_minus 
+		{ sprintf "- %s" uc2}
+	| uc3 = constant_id_OR_unsigned_number {uc3}
+
 constant:
-	s = signe?  csoun = constant_id_OR_unsigned_number 
-	{	let extract = fun rechercher ->
-		match rechercher with
-		| None -> ""
-		| Some x -> x
-		in
-		let sign = extract s
-		in
-		sprintf " %s %s " sign csoun}
+	u = unary_signe_with_constant_id_OR_unsigned_number
+	{ u }
 	|SIMPLECOTE id = ID SIMPLECOTE {sprintf " ' %s ' " id}
 
 (* automate : simple type *)
@@ -109,7 +111,24 @@ field_list:
 		in
 		sprintf "%s %s : %s %s" i (String.concat "" r) t sstr}
 	| CASE i=ID COLON t=type_identifier OF p=line_case_field_list b = recur_line_case_field_list* {sprintf "case %s : %s of %s %s"i t p (String.concat "" b)}
+(*
 
+(* automate : simple expression *)
+simple_expression:
+	s=signe? term {s}
+
+(* automate : variable *)
+recur_expression:
+	COMA e=expression {sprintf ", %s" e}
+
+boucle_intern:
+	LBR expression re=recur_expression* RBR {sprintf " [ %s ]" (String.concat "" re)}
+	| DOT i = ID {sprintf ". %s" i}
+
+variable : 
+	i = ID b=boucle_intern* {sprintf "%s %s" i, (String.concat "" b)}
+
+*)
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
@@ -117,10 +136,10 @@ program:
 
 	(*du debug, pour le moment*)
 	(* b = unsigned_constant* *)
-	(*c = constant* *)
+	c = constant*
 	(*s = simple_type* *)
 	(*t = type_automate* *)
-	f = field_list*
+	(*f = field_list* *)
 	END
 	DOT
 	(*{
@@ -133,6 +152,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n begin\n %s\n end.\n\n" i (String.concat "" f)}
+	{printf "program %s;\n begin\n %s\n end.\n\n" i (String.concat "" c)}
 
 %%
