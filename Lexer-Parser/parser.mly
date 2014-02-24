@@ -172,13 +172,16 @@ block_var:
 
 (*Procedure et Function*)
 mult_parameter:
-	SEMICOLON p = parameter_list {sprintf "; %s" p}
+	SEMICOLON p = under_parameter_list {sprintf "; %s" p}
+
+under_parameter_list:
+	i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "%s %s : %s %s" i (String.concat "" m) t (String.concat "" mp)}
+	| FUNCTION i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "function %s %s : %s %s " i (String.concat "" m) t (String.concat "" mp)}
+	| VAR i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "var %s %s : %s %s " i (String.concat "" m) t (String.concat "" mp)}
+	| PROCEDURE i = ID m = mult_var* mp = mult_parameter* {sprintf "procedure %s %s %s" i (String.concat "" m) (String.concat "" mp)}
 
 parameter_list:
-	LPAR i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* RPAR {sprintf "( %s %s : %s %s )" i (String.concat "" m) t (String.concat "" mp)}
-	| LPAR FUNCTION i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* RPAR {sprintf "( function %s %s : %s %s )" i (String.concat "" m) t (String.concat "" mp)}
-	| LPAR VAR i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* RPAR {sprintf "( var %s %s : %s %s )" i (String.concat "" m) t (String.concat "" mp)}
-	| LPAR PROCEDURE i = ID m = mult_var* mp = mult_parameter* RPAR {sprintf "( procedure %s %s %s )" i (String.concat "" m) (String.concat "" mp)}
+	LPAR u=under_parameter_list mp=mult_parameter* RPAR {sprintf "( %s %s )" u (String.concat "" mp)}
 
 procedure:
 	PROCEDURE i = ID pa = parameter_list? SEMICOLON b = block SEMICOLON

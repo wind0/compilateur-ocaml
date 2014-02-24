@@ -10,8 +10,8 @@ var
 	y,z : integer;
 procedure test;
 begin
-end;	
-procedure test1 (x,y : integer);
+end;
+procedure test1 (x,y : integer; x,y : integer);
 begin
 end;
 function teste : integer; 
