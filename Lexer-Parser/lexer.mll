@@ -82,6 +82,11 @@ newline {token lexbuf}
 |identifier as id { PROCID id }
 |identifier as id { FUNCID id }
 |identifier as id { VARID id }
+|identifier as id { TYPEID id }
+|identifier as id { PARAMLISTID id }
+|identifier as id { CONSTID id }
+|identifier as id { CONSTBLOCKID id }
+|identifier as id { SIMPLETYPEID id }
 
 (* Token pour ajouter des VAR aux programmes *)
 

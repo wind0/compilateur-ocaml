@@ -14,6 +14,12 @@
 %token <string> PROCID
 %token <string> FUNCID
 %token <string> VARID
+%token <string> TYPEID
+%token <string> PARAMLISTID
+%token <string> CONSTID
+%token <string> CONSTBLOCKID
+%token <string> SIMPLETYPEID
+
 %token <int32> INTC
 %token PROGRAM BEGIN END SEMICOLON DOT
 %token SIMPLECOTE NIL
@@ -52,7 +58,7 @@ unsigned_constant :
 	(*i = ID {i}*)
 	|integ = INTC {sprintf " %li" integ}
 	|NIL {sprintf " nil"}
-	|SIMPLECOTE id = ID SIMPLECOTE {sprintf " ' %s ' " id}
+	|SIMPLECOTE id = CONSTID SIMPLECOTE {sprintf " ' %s ' " id}
 
 (* automate : constant *)
 signe : 
@@ -60,7 +66,7 @@ signe :
 	| MINUS {sprintf "-"}
 
 constant_id_OR_unsigned_number:
-	i = ID {i}
+	i = CONSTID {i}
 	|integ = INTC {sprintf " %li" integ}
 
 unary_signe_with_constant_id_OR_unsigned_number :
@@ -73,14 +79,14 @@ unary_signe_with_constant_id_OR_unsigned_number :
 constant:
 	u = unary_signe_with_constant_id_OR_unsigned_number
 	{ u }
-	|SIMPLECOTE id = ID SIMPLECOTE {sprintf " ' %s ' " id}
+	|SIMPLECOTE id = CONSTID SIMPLECOTE {sprintf " ' %s ' " id}
 
 (* automate : simple type *)
 recur_id:
-	COMA id = ID {sprintf ", %s" id}
+	COMA id = SIMPLETYPEID {sprintf ", %s" id}
 
 para_recur_id:
-	LPAR i = ID r = recur_id*  RPAR {sprintf "(%s %s)" i (String.concat "" r)}
+	LPAR i = SIMPLETYPEID r = recur_id*  RPAR {sprintf "(%s %s)" i (String.concat "" r)}
 
 
 type_identifier:
@@ -267,7 +273,7 @@ statement:
 
 (*Constante*)
 init_const:
-	i = ID EQ c = constant SEMICOLON 
+	i = CONSTBLOCKID EQ c = constant SEMICOLON 
 	{sprintf "%s = %s ;" i c}
 
 block_const:
@@ -278,7 +284,7 @@ block_const:
 
 (*Type*)
 init_type:
-	i = ID EQ t = type_automate SEMICOLON
+	i = TYPEID EQ t = type_automate SEMICOLON
 	{sprintf "%s = %s ;" i t}
 
 block_type:
@@ -305,7 +311,7 @@ mult_parameter:
 	SEMICOLON p = under_parameter_list {sprintf "; %s" p}
 
 under_parameter_list:
-	i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "%s %s : %s %s" i (String.concat "" m) t (String.concat "" mp)}
+	i = PARAMLISTID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "%s %s : %s %s" i (String.concat "" m) t (String.concat "" mp)}
 	| FUNCTION i = FUNCID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "function %s %s : %s %s " i (String.concat "" m) t (String.concat "" mp)}
 	| VAR i = VARID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "var %s %s : %s %s " i (String.concat "" m) t (String.concat "" mp)}
 	| PROCEDURE i = PROCID m = mult_var* mp = mult_parameter* {sprintf "procedure %s %s %s" i (String.concat "" m) (String.concat "" mp)}
