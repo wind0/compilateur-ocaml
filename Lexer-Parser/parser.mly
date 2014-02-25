@@ -8,8 +8,12 @@
 
 %}
 
+
 /* Token */
 %token <string> ID
+%token <string> PROCID
+%token <string> FUNCID
+%token <string> VARID
 %token <int32> INTC
 %token PROGRAM BEGIN END SEMICOLON DOT
 %token SIMPLECOTE NIL
@@ -24,13 +28,16 @@
 %token COLON COLONEQ
 %token VAR CONST TYPE PROCEDURE FUNCTION
 %token IF THEN ELSE CASE
-%token WHILE DO REPEAT UNTIL FOR TO DOWNTO WITH
+%token WHILE DO REPEAT UNTIL FOR TO DOWNTO
 
 (* Start du parser *)
 %start program
 %type <unit> program
 
+%nonassoc COLONEQ
 %nonassoc unary_minus unary_plus
+%nonassoc THEN
+%nonassoc ELSE
 (*
 
 %nonassoc UNARYPLUS UNARYMINUS
@@ -42,7 +49,7 @@
 (* automate : unsigned constant  *)
 
 unsigned_constant : 
-	i = ID {i}
+	(*i = ID {i}*)
 	|integ = INTC {sprintf " %li" integ}
 	|NIL {sprintf " nil"}
 	|SIMPLECOTE id = ID SIMPLECOTE {sprintf " ' %s ' " id}
@@ -160,7 +167,7 @@ factor:
 	(* les 3 suivantes *)
 	u = unsigned_constant {u}
 	| v = variable {v}
-	|funct = ID a=after_function_identifier? 
+	|funct = FUNCID a=after_function_identifier? 
 	{
 	let afi = extract a
 	in
@@ -218,10 +225,10 @@ expression:
 (* automate statement *)
 
 mult_id:
-	COMA i = ID {sprintf ", %s" i}
+	COMA i = PROCID {sprintf ", %s" i}
 
 expr_proc:
-	LPAR i = ID m = mult_id* RPAR {sprintf "( %s %s )" i (String.concat "" m)}
+	LPAR i = PROCID m = mult_id* RPAR {sprintf "( %s %s )" i (String.concat "" m)}
  	|LPAR e = expression m = mult_expression* RPAR {sprintf "( %s %s )" e (String.concat "" m)}
 
 mult_statement:
@@ -240,17 +247,20 @@ incr_decr:
 	TO {sprintf "to"}
 	|DOWNTO {sprintf "downto"}
 
+(*else_pos:
+	ELSE s = statement {sprintf "else %s" s}	*)
+
 statement:
 	v = variable COLONEQ e = expression {sprintf "%s := %s" v e}
-	|i = ID COLONEQ e = expression {sprintf "%s := %s" i e}
-	|i = ID e = expr_proc? {let expr = extract e in sprintf "%s" expr}
+	|i = FUNCID COLONEQ e = expression {sprintf "%s := %s" i e}
+	|i = PROCID e = expr_proc? {let expr = extract e in sprintf "%s" expr}
 	|BEGIN s = statement m = mult_statement* END {sprintf "begin %s %s end" s (String.concat "" m)}
-	|IF e = expression THEN s = statement {sprintf "if %s then %s" e s}
+	|IF e = expression THEN s = statement {sprintf "if %s then %s " e s}   
 	|IF e = expression THEN s = statement ELSE s2 = statement {sprintf "if %s then %s else %s" e s s2}   
 	|CASE e = expression OF s = single_case m = mult_case* END {sprintf "case %s of %s %s end" e s (String.concat "" m)}
 	|WHILE e= expression DO s = statement {sprintf "while %s do %s" e s}
 	|REPEAT s = statement m = mult_statement* UNTIL e = expression {sprintf "repeat %s %s until %s" s (String.concat "" m) e}
-	|FOR i = ID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {sprintf "for %s := %s %s %s do %s" i e inc e2 s} 
+	|FOR i = VARID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {sprintf "for %s := %s %s %s do %s" i e inc e2 s} 
 
 (* BLOCK *)
 
@@ -279,10 +289,10 @@ block_type:
 
 (*Var*)
 mult_var:
-	COMA i = ID {sprintf ", %s" i}
+	COMA i = VARID {sprintf ", %s" i}
 
 init_var:
-	i = ID m = mult_var* COLON t = type_automate SEMICOLON {sprintf "%s %s : %s ;" i (String.concat "" m) t}
+	i = VARID m = mult_var* COLON t = type_automate SEMICOLON {sprintf "%s %s : %s ;" i (String.concat "" m) t}
 
 block_var:
 	VAR
@@ -296,22 +306,22 @@ mult_parameter:
 
 under_parameter_list:
 	i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "%s %s : %s %s" i (String.concat "" m) t (String.concat "" mp)}
-	| FUNCTION i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "function %s %s : %s %s " i (String.concat "" m) t (String.concat "" mp)}
-	| VAR i = ID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "var %s %s : %s %s " i (String.concat "" m) t (String.concat "" mp)}
-	| PROCEDURE i = ID m = mult_var* mp = mult_parameter* {sprintf "procedure %s %s %s" i (String.concat "" m) (String.concat "" mp)}
+	| FUNCTION i = FUNCID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "function %s %s : %s %s " i (String.concat "" m) t (String.concat "" mp)}
+	| VAR i = VARID m = mult_var* COLON t = type_identifier mp = mult_parameter* {sprintf "var %s %s : %s %s " i (String.concat "" m) t (String.concat "" mp)}
+	| PROCEDURE i = PROCID m = mult_var* mp = mult_parameter* {sprintf "procedure %s %s %s" i (String.concat "" m) (String.concat "" mp)}
 
 parameter_list:
 	LPAR u=under_parameter_list mp=mult_parameter* RPAR {sprintf "( %s %s )" u (String.concat "" mp)}
 
 procedure:
-	PROCEDURE i = ID pa = parameter_list? SEMICOLON b = block SEMICOLON
+	PROCEDURE i = PROCID pa = parameter_list? SEMICOLON b = block SEMICOLON
 	{
 		let para = extract pa
 	in
 	sprintf "procedure %s %s ; %s ;" i para b}	
 
 function_bl:
-	FUNCTION i = ID pa = parameter_list? COLON t = type_identifier SEMICOLON b = block SEMICOLON
+	FUNCTION i = FUNCID pa = parameter_list? COLON t = type_identifier SEMICOLON b = block SEMICOLON
 	{
 		let para = extract pa
 	in

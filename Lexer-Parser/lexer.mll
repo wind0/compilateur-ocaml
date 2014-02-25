@@ -79,6 +79,9 @@ newline {token lexbuf}
 |"downto" { DOWNTO }
 |integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
 |identifier as id { ID id }
+|identifier as id { PROCID id }
+|identifier as id { FUNCID id }
+|identifier as id { VARID id }
 
 (* Token pour ajouter des VAR aux programmes *)
 
