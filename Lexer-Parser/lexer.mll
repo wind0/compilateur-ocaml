@@ -87,6 +87,7 @@ newline {token lexbuf}
 |identifier as id { CONSTID id }
 |identifier as id { CONSTBLOCKID id }
 |identifier as id { SIMPLETYPEID id }
+|identifier as id { FIELDID id }
 
 (* Token pour ajouter des VAR aux programmes *)
 

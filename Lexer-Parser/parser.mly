@@ -19,6 +19,7 @@
 %token <string> CONSTID
 %token <string> CONSTBLOCKID
 %token <string> SIMPLETYPEID
+%token <string> FIELDID
 
 %token <int32> INTC
 %token PROGRAM BEGIN END SEMICOLON DOT
@@ -123,12 +124,12 @@ recur_line_case_field_list:
 	SEMICOLON p=line_case_field_list {sprintf "; %s" p}
 
 field_list:
-	i=ID r=recur_id* COLON t=type_automate sfl=semicolon_field_list?
+	i=FIELDID r=recur_id* COLON t=type_automate sfl=semicolon_field_list?
 	{
 		let sstr = extract sfl 
 		in
 		sprintf "%s %s : %s %s" i (String.concat "" r) t sstr}
-	| CASE i=ID COLON t=type_identifier OF p=line_case_field_list b = recur_line_case_field_list* {sprintf "case %s : %s of %s %s"i t p (String.concat "" b)}
+	| CASE i=FIELDID COLON t=type_identifier OF p=line_case_field_list b = recur_line_case_field_list* {sprintf "case %s : %s of %s %s"i t p (String.concat "" b)}
 
 
 
@@ -152,16 +153,22 @@ recur_expression:
 
 boucle_intern_variable:
 	LBR e=expression re=recur_expression* RBR {sprintf " [ %s %s ]"e (String.concat "" re)}
-	| DOT i = ID {sprintf ". %s" i}
+	| DOT i = VARID {sprintf ". %s" i}
 
 variable : 
-	i=ID b=boucle_intern_variable* {sprintf "%s %s" i (String.concat "" b)}
+	i=VARID b=boucle_intern_variable* {sprintf "%s %s" i (String.concat "" b)}
 
 
 (* automate factor *)
 
+(*
+(** ancienne version **)
 mult_expression:
 	COMA e = expression {sprintf ", %s" e}
+
+after_function_identifier:
+	LPAR m=mult_expression em=mult_expression* RPAR {sprintf " ( %s %s )" m (String.concat "" em)}
+*)
 
 after_function_identifier:
 	LPAR e=separated_nonempty_list(COMA,expression)  RPAR {sprintf " ( %s )" (String.concat "" e)}
@@ -219,7 +226,7 @@ opexp_with_simple_expression:
 	o = opexp s2 = simple_expression {sprintf "%s %s" o s2}
 
 expression:
-	s = simple_expression o=opexp_with_simple_expression? 
+	s = simple_expression o=opexp_with_simple_expression?
 	{
 	let owse = extract o
 	in
@@ -358,7 +365,6 @@ block:
 			let vars = extract bv
 		in
 		sprintf "%s \n %s \n %s \n %s \n %s \n begin\n %s %s end" cons types vars (String.concat "" pro) (String.concat "" func) s (String.concat "" m) }
-
 
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
