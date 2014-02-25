@@ -23,6 +23,8 @@
 %token COLON
 %token CASE
 %token VAR CONST TYPE PROCEDURE FUNCTION
+%token DIV MULT PUIS
+%token GT LE NOTEQ IN GE LT NOT MOD 
 
 /* Start du parser */
 %start program
@@ -37,14 +39,15 @@
 */
 
 %%
-/* automate : unsigned constant  */
+(* automate : unsigned constant  *)
+
 unsigned_constant : 
 	i = ID {i}
 	|integ = INTC {sprintf " %li" integ}
 	|NIL {sprintf " nil"}
 	|SIMPLECOTE id = ID SIMPLECOTE {sprintf " ' %s ' " id}
 
-/* automate : constant */
+(* automate : constant *)
 signe : 
 	PLUS {sprintf "+"}
 	| MINUS {sprintf "-"}
@@ -113,45 +116,68 @@ field_list:
 		in
 		sprintf "%s %s : %s %s" i (String.concat "" r) t sstr}
 	| CASE i=ID COLON t=type_identifier OF p=line_case_field_list b = recur_line_case_field_list* {sprintf "case %s : %s of %s %s"i t p (String.concat "" b)}
-(*
+
+
 
 (* automate : simple expression *)
+(* genial remplace ça : *)
+recur_simple_expression:
+	si=signe t2=term {sprintf "%s %s" si t2}
+
 simple_expression:
-	s=signe? term {s}
+	s=signe? t=term r=recur_simple_expression*
+	(* s=signe? genial=separated_nonempty_list(signe, term) *)
+	{
+		let sstr = extract s
+		in
+		sprintf "%s %s %s" sstr t (String.concat "" r)
+	}
 
 (* automate : variable *)
 recur_expression:
 	COMA e=expression {sprintf ", %s" e}
 
-boucle_intern:
-	LBR expression re=recur_expression* RBR {sprintf " [ %s ]" (String.concat "" re)}
+boucle_intern_variable:
+	LBR e=expression re=recur_expression* RBR {sprintf " [ %s %s ]"e (String.concat "" re)}
 	| DOT i = ID {sprintf ". %s" i}
 
 variable : 
-	i = ID b=boucle_intern* {sprintf "%s %s" i, (String.concat "" b)}
-
-*)
-
+	i=ID b=boucle_intern_variable* {sprintf "%s %s" i (String.concat "" b)}
 
 
 (* automate factor *)
 
-(*mult_expression
+mult_expression:
 	COMA e = expression {sprintf ", %s" e}
 
+after_function_identifier:
+	LPAR e = expression m = mult_expression* RPAR {sprintf " ( %s %s )" e (String.concat "" m)}
+
+after_LBR:
+	e = expression m = mult_expression* { sprintf "%s %s" e (String.concat "" m)}
+
 factor:
-	u = unsigned_constant {sprintf "%s" u}
-	|v = variable {sprintf "%s" v}
-	|funct = ID {sprintf "%s" funct}
-	|funct = ID LPAR e = expression m = mult_expression* RPAR {sprintf "%s ( %s %s )" funct e (String.concat "" m)} 
+	(* les 3 suivantes *)
+	u = unsigned_constant {u}
+	| v = variable {v}
+	|funct = ID a=after_function_identifier? 
+	{
+	let afi = extract a
+	in
+	sprintf "%s %s" funct afi
+	}
 	|LPAR e = expression RPAR {sprintf " ( %s )" e}
 	|NOT f = factor {sprintf "!%s" f}
-	|LBR RBR {sprintf "[]"}
-	|LBR e = expression m = mult_expression* RBR {sprintf "[%s %s]" e (String.concat "" m)}*)
+	|LBR a=after_LBR? RBR 
+	{
+	let aflbr = extract a
+	in
+	sprintf "[%s]" aflbr
+	}
 
 (* automate term *)
 
-(*operator_term:
+operator_term:
 	MULT {sprintf "*"}
 	|DIV {sprintf "/"}
 	|MOD {sprintf "mod"}
@@ -161,12 +187,13 @@ mult_factor:
 	o = operator_term f = factor {sprintf "%s %s" o f} 	
 
 term:
-	f = factor {sprintf "%s" f}
-	| f = factor m = mult_factor* {sprintf "%s %s" f (String.concat "" m)}*)
+	f = factor m = mult_factor* {sprintf "%s %s" f (String.concat "" m)}
+
+
 
 (* automate expression *)
 
-(*opexp:
+opexp:
 	EQ {sprintf "="}
 	|NOTEQ {sprintf "!="}
 	|LT {sprintf "<"}
@@ -175,10 +202,16 @@ term:
 	|GE {sprintf ">="}
 	|IN {sprintf "in"}
 
-expression:
-	s = simple_expression {sprintf "%s" s}
-	| s = simple_expression o = opexp s2 = simple_expression {sprintf "%s %s %s " s o s2}*)	
+opexp_with_simple_expression:
+	o = opexp s2 = simple_expression {sprintf "%s %s" o s2}
 
+expression:
+	s = simple_expression o=opexp_with_simple_expression? 
+	{
+	let owse = extract o
+	in
+	sprintf "%s %s" s owse
+	}
 
 
 (* BLOCK *)
@@ -275,7 +308,9 @@ block:
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
-		b = block
+		(*b = block *)
+		(*e = expression*)
+		v = expression
 	DOT
 	(*{
 		let extract = fun rechercher ->
@@ -287,6 +322,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n %s.\n\n" i b}
+	{	printf "program %s;\n %s.\n\n" i v}
 
 %%
