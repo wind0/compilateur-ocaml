@@ -12,31 +12,31 @@
 %token <string> ID
 %token <int32> INTC
 %token PROGRAM BEGIN END SEMICOLON DOT
-%token SIMPLECOTE NIL EQ
-%token MINUS PLUS
+%token SIMPLECOTE NIL
+%token EQ NOTEQ LT GT LE GE IN NOT
+%token MINUS PLUS MULT DIV MOD PUIS
 %token COMA DOUBLEDOT
 %token RPAR LPAR
 %token INTEGER BOOLEAN
 %token LBR RBR
 %token ARRAY OF
 %token RECORD
-%token COLON
-%token CASE
+%token COLON COLONEQ
 %token VAR CONST TYPE PROCEDURE FUNCTION
-%token DIV MULT PUIS
-%token GT LE NOTEQ IN GE LT NOT MOD 
+%token IF THEN ELSE CASE
+%token WHILE DO REPEAT UNTIL FOR TO DOWNTO WITH
 
-/* Start du parser */
+(* Start du parser *)
 %start program
 %type <unit> program
 
 %nonassoc unary_minus unary_plus
-/*
+(*
 
 %nonassoc UNARYPLUS UNARYMINUS
 %left COMA
 %left LPAR
-*/
+*)
 
 %%
 (* automate : unsigned constant  *)
@@ -214,6 +214,44 @@ expression:
 	}
 
 
+
+(* automate statement *)
+
+mult_id:
+	COMA i = ID {sprintf ", %s" i}
+
+expr_proc:
+	LPAR i = ID m = mult_id* RPAR {sprintf "( %s %s )" i (String.concat "" m)}
+ 	|LPAR e = expression m = mult_expression* RPAR {sprintf "( %s %s )" e (String.concat "" m)}
+
+mult_statement:
+	SEMICOLON s = statement {sprintf "; %s" s}
+
+mult_constant:
+	COMA c = constant {sprintf ", %s" c}
+
+mult_case:
+	SEMICOLON c = constant m = mult_constant* COLON s = statement {sprintf "; %s %s : %s" c (String.concat "" m) s}
+
+single_case:
+	c = constant m = mult_constant* COLON s = statement {sprintf "%s %s : %s" c (String.concat "" m) s}
+
+incr_decr:
+	TO {sprintf "to"}
+	|DOWNTO {sprintf "downto"}
+
+statement:
+	v = variable COLONEQ e = expression {sprintf "%s := %s" v e}
+	|i = ID COLONEQ e = expression {sprintf "%s := %s" i e}
+	|i = ID e = expr_proc? {let expr = extract e in sprintf "%s" expr}
+	|BEGIN s = statement m = mult_statement* END {sprintf "begin %s %s end" s (String.concat "" m)}
+	|IF e = expression THEN s = statement {sprintf "if %s then %s" e s}
+	|IF e = expression THEN s = statement ELSE s2 = statement {sprintf "if %s then %s else %s" e s s2}   
+	|CASE e = expression OF s = single_case m = mult_case* END {sprintf "case %s of %s %s end" e s (String.concat "" m)}
+	|WHILE e= expression DO s = statement {sprintf "while %s do %s" e s}
+	|REPEAT s = statement m = mult_statement* UNTIL e = expression {sprintf "repeat %s %s until %s" s (String.concat "" m) e}
+	|FOR i = ID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {sprintf "for %s := %s %s %s do %s" i e inc e2 s} 
+
 (* BLOCK *)
 
 
@@ -294,6 +332,7 @@ block:
 		(*s = simple_type* *)
 		(*t = type_automate* *)
 		(*f = field_list* *)
+		s = statement m = mult_statement*
 	END
 	{ 
 			let cons = extract bc
@@ -302,15 +341,13 @@ block:
 		in
 			let vars = extract bv
 		in
-		sprintf "%s \n %s \n %s \n %s \n %s \n begin\n end" cons types vars (String.concat "" pro) (String.concat "" func) }
+		sprintf "%s \n %s \n %s \n %s \n %s \n begin\n %s %s end" cons types vars (String.concat "" pro) (String.concat "" func) s (String.concat "" m) }
 
 
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
-		(*b = block *)
-		(*e = expression*)
-		v = expression
+		b = block
 	DOT
 	(*{
 		let extract = fun rechercher ->
@@ -322,6 +359,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{	printf "program %s;\n %s.\n\n" i v}
+	{printf "program %s;\n %s.\n\n" i b}
 
 %%

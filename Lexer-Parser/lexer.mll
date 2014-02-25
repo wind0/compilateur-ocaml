@@ -59,11 +59,24 @@ newline {token lexbuf}
 |">=" { GE }
 |"in" { IN }
 |"!" { NOT }
+|":=" { COLONEQ }
 |"var" { VAR }
 |"const" { CONST }
 |"type" { TYPE }
 |"procedure" { PROCEDURE }
 |"function" { FUNCTION }
+|"if" { IF }
+|"then" { THEN }
+|"else" { ELSE }
+|"case" { CASE }
+|"of" { OF }
+|"while" { WHILE }
+|"do" { DO }
+|"repeat" { REPEAT }
+|"until" { UNTIL }
+|"for" { FOR }
+|"to" { TO }
+|"downto" { DOWNTO }
 |integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
 |identifier as id { ID id }
 
