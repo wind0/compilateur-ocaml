@@ -363,7 +363,8 @@ block:
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
-		b = block
+		(*b = block *)
+		e = expression
 	DOT
 	(*{
 		let extract = fun rechercher ->
@@ -375,6 +376,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n %s.\n\n" i b}
+	{printf "program %s;\n %s.\n\n" i e}
 
 %%
