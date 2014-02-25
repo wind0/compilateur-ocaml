@@ -40,6 +40,10 @@ newline {token lexbuf}
 |"'" { SIMPLECOTE }
 |"+" { PLUS }
 |"-" { MINUS }
+|"*" { MULT }
+|"/" { DIV }
+|"mod" { MOD }
+|"^" { PUIS }
 |"," { COMA }
 |":" { COLON }
 |"(" { LPAR }
@@ -48,6 +52,13 @@ newline {token lexbuf}
 |"[" { LBR }
 |"]" { RBR }
 |"=" { EQ }
+|"!=" { NOTEQ }
+|"<" { LT }
+|">" { GT }
+|"<=" { LE }
+|">=" { GE }
+|"in" { IN }
+|"!" { NOT }
 |"var" { VAR }
 |"const" { CONST }
 |"type" { TYPE }

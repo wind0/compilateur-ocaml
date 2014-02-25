@@ -133,6 +133,54 @@ variable :
 *)
 
 
+
+(* automate factor *)
+
+(*mult_expression
+	COMA e = expression {sprintf ", %s" e}
+
+factor:
+	u = unsigned_constant {sprintf "%s" u}
+	|v = variable {sprintf "%s" v}
+	|funct = ID {sprintf "%s" funct}
+	|funct = ID LPAR e = expression m = mult_expression* RPAR {sprintf "%s ( %s %s )" funct e (String.concat "" m)} 
+	|LPAR e = expression RPAR {sprintf " ( %s )" e}
+	|NOT f = factor {sprintf "!%s" f}
+	|LBR RBR {sprintf "[]"}
+	|LBR e = expression m = mult_expression* RBR {sprintf "[%s %s]" e (String.concat "" m)}*)
+
+(* automate term *)
+
+(*operator_term:
+	MULT {sprintf "*"}
+	|DIV {sprintf "/"}
+	|MOD {sprintf "mod"}
+	|PUIS {sprintf "^"}
+
+mult_factor:
+	o = operator_term f = factor {sprintf "%s %s" o f} 	
+
+term:
+	f = factor {sprintf "%s" f}
+	| f = factor m = mult_factor* {sprintf "%s %s" f (String.concat "" m)}*)
+
+(* automate expression *)
+
+(*opexp:
+	EQ {sprintf "="}
+	|NOTEQ {sprintf "!="}
+	|LT {sprintf "<"}
+	|GT {sprintf ">"}
+	|LE {sprintf "<="}
+	|GE {sprintf ">="}
+	|IN {sprintf "in"}
+
+expression:
+	s = simple_expression {sprintf "%s" s}
+	| s = simple_expression o = opexp s2 = simple_expression {sprintf "%s %s %s " s o s2}*)	
+
+
+
 (* BLOCK *)
 
 
