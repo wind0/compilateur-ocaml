@@ -64,3 +64,6 @@ Version 0.2.0 :
 		- PROCEDURE
 		- FUNCTION
 	- Necessite d'autres testes
+
+Version 0.2.1 : 
+	-expressions fonctionnent !

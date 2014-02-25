@@ -55,7 +55,7 @@
 (* automate : unsigned constant  *)
 
 unsigned_constant : 
-	(*i = ID {i}*)
+	i = CONSTID {i}
 	|integ = INTC {sprintf " %li" integ}
 	|NIL {sprintf " nil"}
 	|SIMPLECOTE id = CONSTID SIMPLECOTE {sprintf " ' %s ' " id}
@@ -164,10 +164,10 @@ mult_expression:
 	COMA e = expression {sprintf ", %s" e}
 
 after_function_identifier:
-	LPAR e = expression m = mult_expression* RPAR {sprintf " ( %s %s )" e (String.concat "" m)}
+	LPAR e=separated_nonempty_list(COMA,expression)  RPAR {sprintf " ( %s )" (String.concat "" e)}
 
 after_LBR:
-	e = expression m = mult_expression* { sprintf "%s %s" e (String.concat "" m)}
+	e=separated_nonempty_list(COMA, expression) { sprintf "%s" (String.concat "" e)}
 
 factor:
 	(* les 3 suivantes *)
@@ -230,12 +230,12 @@ expression:
 
 (* automate statement *)
 
-mult_id:
-	COMA i = PROCID {sprintf ", %s" i}
+expr_or_procid:
+	id = PROCID {id}
+	| e = expression {e}
 
 expr_proc:
-	LPAR i = PROCID m = mult_id* RPAR {sprintf "( %s %s )" i (String.concat "" m)}
- 	|LPAR e = expression m = mult_expression* RPAR {sprintf "( %s %s )" e (String.concat "" m)}
+	LPAR i=separated_nonempty_list(COMA,expr_or_procid) RPAR {sprintf "( %s )" (String.concat "" i)}
 
 mult_statement:
 	SEMICOLON s = statement {sprintf "; %s" s}
@@ -364,7 +364,7 @@ block:
 program:
 	PROGRAM i = ID SEMICOLON
 		(*b = block *)
-		e = expression
+		e = expression*
 	DOT
 	(*{
 		let extract = fun rechercher ->
@@ -376,6 +376,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n %s.\n\n" i e}
+	{printf "program %s;\n %s.\n\n" i (String.concat "" e)}
 
 %%
