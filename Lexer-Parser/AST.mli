@@ -40,20 +40,71 @@ type simple_type =
 (* Track 5: I don't really understand...*)
 
 type field_list = 
-|Recur of (identifier list ) * stuff
+|Recur of (identifier list ) * field_list
 |Value of simple_type (*... I guess*)
 
-type
+(* Track 6: Variables*)
+type boucle_intern_variable =
+|Brackety of expression list
+|Dotty of identifier
 
-type binop =
+type variable = identifier * boucle_intern_variable list
+
+
+
+(*Bonus Track: operators*)
+type sign =
   | Add
   | Sub
-  | Mul
-  | Div
-  | Mod
+
+type log_bin_op =
   | Lt                                       
   | Le
   | Gt
   | Ge
   | Eq
-  | Ne
+  | Neq
+
+type operator_term =
+|Times
+|Div
+|Mod
+|Pow
+
+
+(* Track 7: Expressions (This is a goodie)*)
+type factor =
+|UConst of unsigned_constant
+|Var of variable
+|Function of funct * expression list
+|Expression of expression
+|Neg_factor of factor
+|Brackety of expression list
+
+
+type term = factor * (operator_term * factor) list
+
+type simple_expression =
+|Signed of sign * term * (sign * term) list
+|USigned of term * (sign * term) list
+
+type expression =
+|Simple of simple_expression
+|Operation of simple_expression * log_bin_op * simple_expression
+
+(* Track 8: BRB, vomiting blood *)
+type expr_or_procid =(* this name...*)
+|Id of identifier
+|Expr of expression
+
+type variable_or_id = 
+|Variable of variable
+|Id of identifier
+
+type statement =
+|Affect of variable_or_id * expression
+|
+
+type real_statement =
+|Labelled of int32 * statement
+|NotLabelled of statement
