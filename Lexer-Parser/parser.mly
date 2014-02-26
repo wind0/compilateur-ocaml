@@ -279,7 +279,7 @@ mult_parameter:
 	SEMICOLON p = under_parameter_list {sprintf "; %s" p}
 
 under_parameter_list:
-	i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter* {sprintf "%s : %s %s" i (String.concat "" i) t (String.concat "" mp)}
+	i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter* {sprintf "%s : %s %s" (String.concat "" i) t (String.concat "" mp)}
 	| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter* {sprintf "function %s : %s %s " (String.concat "" i) t (String.concat "" mp)}
 	| VAR i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter* {sprintf "var %s : %s %s " (String.concat "" i) t (String.concat "" mp)}
 	| PROCEDURE i = separated_nonempty_list(COMA,ID) mp = mult_parameter* {sprintf "procedure %s %s" (String.concat "" i) (String.concat "" mp)}
@@ -341,6 +341,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n %s.\n\n" i (String.concat "" e)}
+	{sprintf "program %s;\n %s.\n" i b}
 
 %%
