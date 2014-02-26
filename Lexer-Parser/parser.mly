@@ -131,7 +131,7 @@ boucle_intern_variable:
 
 variable :
 	(* triste *) 
-	i=ID b=boucle_intern_variable* {sprintf "%s %s" i (String.concat "" b)}
+	i=ID b=boucle_intern_variable* {sprintf " %s"(String.concat "" b)}
 
 
 (* automate factor *)
@@ -293,7 +293,7 @@ procedure:
 		let para = extract pa
 	in
 	sprintf "procedure %s %s ; %s ;" i para b}	
-
+	(* fonction *)
 function_bl:
 	FUNCTION i = ID pa = parameter_list? COLON t = type_identifier SEMICOLON b = block SEMICOLON
 	{
@@ -319,10 +319,8 @@ block:
 		s = separated_nonempty_list(SEMICOLON, statement)
 	END
 	{ 
-			let cons = extract bc
-		in	
-			let types = extract bt
-		in
+			let cons = extract bc in
+			let types = extract bt in 
 			let vars = extract bv
 		in
 		sprintf "%s \n %s \n %s \n %s \n %s \n begin\n %s end" cons types vars (String.concat "" pro) (String.concat "" func) (String.concat "" s) }
@@ -330,8 +328,8 @@ block:
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
-		(*b = block *)
-		e = expression*
+		b = block
+		(*e = expression* *)
 	DOT
 	(*{
 		let extract = fun rechercher ->

@@ -1,4 +1,4 @@
 program Bonjour ;
 	5*8 != -125 
-	moal(biatch) != coder(cool) 
+	moal(biatch, vomit, shit) != coder(cool) 
 .
