@@ -75,7 +75,7 @@ constant:
 (* automate : simple type *)
 
 para_recur_id:
-	LPAR i = separated_nonempty_list(ID,COMA)  RPAR {sprintf "(%s)" (String.concat "" i)}
+	LPAR i = separated_nonempty_list(COMA,ID)  RPAR {sprintf "(%s)" (String.concat "" i)}
 
 
 type_identifier:
@@ -341,6 +341,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{sprintf "program %s;\n %s.\n" i b}
+	{printf "program %s;\n %s.\n" i b}
 
 %%
