@@ -32,6 +32,7 @@ newline {token lexbuf}
 | "begin" { BEGIN }
 | "end" { END }
 | ";" { SEMICOLON }
+| ".(" { DOTLPAR }
 | "." { DOT }
 |"record" { RECORD }
 |"array" { ARRAY }
