@@ -13,7 +13,9 @@
 }
 
 let digit = ['0'-'9']
+let lowerletter = ['a'-'z']
 let letter = ['A'-'Z' 'a'-'z']
+let varid = lowerletter (letter | digit)*
 let identifier = letter (letter | digit)*
 let integer = digit+
 let newline = ('\010'|'\013'|"\013\010")
@@ -78,6 +80,7 @@ newline {token lexbuf}
 |"to" { TO }
 |"downto" { DOWNTO }
 |integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
+|varid as v { VARID v }
 |identifier as id { ID id }
 
 (* Token pour ajouter des VAR aux programmes *)
