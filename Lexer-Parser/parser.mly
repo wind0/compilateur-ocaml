@@ -48,7 +48,7 @@
 (* automate : unsigned constant  *)
 
 unsigned_constant : 
-	(*i = ID {i} *)
+	(*i = ID {i}*) 
 	integ = INTC {sprintf " %li" integ}
 	|NIL {sprintf " nil"}
 	|SIMPLECOTE id = ID SIMPLECOTE {sprintf " ' %s ' " id}
@@ -239,7 +239,6 @@ statement:
 (* oui statement peut etre vide *)
 	|v = variable_or_id COLONEQ e = expression {sprintf "%s := %s" v e}
 	|i = ID e = expr_proc? {let expr = extract e in sprintf "%s" expr}
-	|BEGIN s = separated_nonempty_list(SEMICOLON,real_statement) END {sprintf "begin %s end" (String.concat "" s)}
 	|IF e = expression THEN s = real_statement {sprintf "if %s then %s " e s}   
 	|IF e = expression THEN s = real_statement ELSE s2 = real_statement {sprintf "if %s then %s else %s" e s s2}   
 	|CASE e = expression OF s = separated_nonempty_list(SEMICOLON,single_case) END {sprintf "case %s of %s end" e (String.concat "" s)}
@@ -340,8 +339,8 @@ block:
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
-		(*b = block *) 
-		e = simple_type*
+		b = block
+		(*e = simple_type* *)
 	DOT
 	(*{
 		let extract = fun rechercher ->
@@ -353,6 +352,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n %s.\n" i (*b*)(String.concat "" e)}
+	{printf "program %s;\n %s.\n" i b(*(String.concat "" e)*)}
 
 %%
