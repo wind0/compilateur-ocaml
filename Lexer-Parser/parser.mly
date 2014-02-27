@@ -134,7 +134,7 @@ simple_expression:
 boucle_intern_variable:
 	LBR e= separated_nonempty_list(COMA,expression) RBR {sprintf " [ %s ]"(String.concat "" e)}
 	(* cette partie là fou la merde totale !!!!! esoterique*)
-	(* | DOT i = VARID {sprintf ". %s" i} *)
+	 | DOT i = VARID {sprintf ". %s" i}
 
 variable :
 	(* triste *)
@@ -349,7 +349,7 @@ program:
 	PROGRAM i = ID SEMICOLON
 		(*b = block *)
 		e = variable*
-	DOT
+	DOTLPAR
 	(*{
 		let extract = fun rechercher ->
 		match rechercher with

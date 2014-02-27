@@ -1,4 +1,4 @@
 program Bonjour ;
-	maMoalVariable
+	maMoalVariable . biatch
 	[5*8 != -125]
-.
+.(
