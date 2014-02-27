@@ -14,7 +14,8 @@ begin
 end;
 begin
 	case aqsds of
-	'bsd',ddd : moal := 5*8 != -125
+	'b sdpofinsdfoisndfoisndf
+	sodfinsdoifnsoifnsd',ddd : moal := 5*8 != -125
 	end;
 
 	repeat x := 5*8; x := 7*4

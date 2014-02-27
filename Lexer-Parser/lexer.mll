@@ -20,6 +20,7 @@ let identifier = letter (letter | digit)*
 let integer = digit+
 let newline = ('\010'|'\013'|"\013\010")
 let ws = [' ' '\t']
+let string = [^'''] (letter | digit | newline | ws)*
 
 rule token = parse
 
@@ -39,7 +40,6 @@ newline {token lexbuf}
 |"integer" { INTEGER }
 |"boolean" { BOOLEAN }
 |"nil" { NIL }
-|"'" { SIMPLECOTE }
 |"+" { PLUS }
 |"-" { MINUS }
 |"*" { MULT }
@@ -80,6 +80,7 @@ newline {token lexbuf}
 |"to" { TO }
 |"downto" { DOWNTO }
 |integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
+|"'"([^''']* as s)"'" {STRING s}
 |varid as v { VARID v }
 |identifier as id { ID id }
 

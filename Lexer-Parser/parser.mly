@@ -12,10 +12,11 @@
 /* Token */
 %token <string> VARID
 %token <string> ID
+%token <string> STRING
 
 %token <int32> INTC
 %token PROGRAM BEGIN END SEMICOLON DOT
-%token SIMPLECOTE NIL
+%token NIL
 %token EQ NOTEQ LT GT LE GE IN NOT
 %token MINUS PLUS MULT DIV MOD PUIS
 %token COMA DOUBLEDOT
@@ -51,7 +52,7 @@ unsigned_constant :
 	(*i = ID {i}*) 
 	integ = INTC {sprintf " %li" integ}
 	|NIL {sprintf " nil"}
-	|SIMPLECOTE id = ID SIMPLECOTE {sprintf " ' %s ' " id}
+	|id = STRING {sprintf " ' %s ' " id}
 
 (* automate : constant *)
 signe : 
@@ -73,7 +74,7 @@ unary_signe_with_constant_id_OR_unsigned_number :
 constant:
 	u = unary_signe_with_constant_id_OR_unsigned_number
 	{ u }
-	|SIMPLECOTE id = VARID SIMPLECOTE {sprintf " ' %s ' " id}
+	|id = STRING {sprintf " ' %s ' " id}
 
 (* automate : simple type *)
 
@@ -226,10 +227,10 @@ expr_or_procid:
 
 expr_proc:
 	LPAR i=separated_nonempty_list(COMA,expr_or_procid) RPAR {sprintf "( %s )" (String.concat "" i)}
-
+(*
 single_case:
 	c = separated_nonempty_list(COMA,constant) COLON s = statement {sprintf "%s : %s" (String.concat "" c) s}
-
+*)
 incr_decr:
 	TO {sprintf "to"}
 	|DOWNTO {sprintf "downto"}
