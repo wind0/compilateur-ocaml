@@ -252,7 +252,7 @@ statement:
 	|CASE e = expression OF a = separated_nonempty_list(SEMICOLON, after_of_statement) END {sprintf "case %s of %s end" e (String.concat "" a)}
 	|WHILE e= expression DO s = statement {sprintf "while %s do %s" e s}
 	|REPEAT s = separated_nonempty_list(SEMICOLON, statement) UNTIL e = expression {sprintf "repeat %s until %s" (String.concat "" s) e}
-	|FOR i = ID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {sprintf "for %s := %s %s %s do %s" i e inc e2 s} 
+	|FOR i = VARID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {sprintf "for %s := %s %s %s do %s" i e inc e2 s} 
 
 (* BLOCK *)
 

@@ -13,4 +13,8 @@ program Bonjour ;
 	do
 	moal := 0
 
+	for a := 5*8 != -125 to -2000
+	do
+	moal := 0
+	a := a - 1
 .
