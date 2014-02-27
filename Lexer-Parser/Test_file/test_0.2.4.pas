@@ -13,6 +13,10 @@ program Bonjour ;
 	do
 	moal := 0
 
+	repeat x := 5*8; x := 7*4
+	until
+	5*8
+
 	for a := 5*8 != -125 to -2000
 	do
 	moal := 0
