@@ -1,10 +1,7 @@
 %{
     open Printf
 
-    let extract = fun rechercher ->
-	match rechercher with
-	| None -> ""
-	| Some x -> x
+    open AST
 
 %}
 
@@ -73,7 +70,7 @@ unary_signe_with_constant_id_OR_unsigned_number :
 constant:
 	u = unary_signe_with_constant_id_OR_unsigned_number
 	{ u }
-	|SIMPLECOTE id = VARID SIMPLECOTE {CString(id}
+	|SIMPLECOTE id = VARID SIMPLECOTE {CString(id)}
 
 (* automate : simple type *)
 
@@ -92,54 +89,56 @@ simple_type:
 (* automate : type *)
 
 array_para_recur_simple_type:
-	ARRAY LBR i = separated_nonempty_list(COMA, simple_type) RBR OF typ=type_automate {sprintf "array [%s] of %s" (String.concat "" i) typ}
+	ARRAY LBR i = separated_nonempty_list(COMA, simple_type) RBR OF typ=type_automate {AST.array_type_automate:(i,typ)}
 
 type_automate:
-	s = simple_type {sprintf "%s\n " s}
-	| a = array_para_recur_simple_type {a}
-	| RECORD f =field_list END {sprintf "record %s end" f}
+	s = simple_type {Simple(s)}
+	| a = array_para_recur_simple_type {Array(a)}
+	| RECORD f =field_list END {Record(f)}
 
 (* automate : field list *)
 semicolon_field_list:
-	SEMICOLON f=field_list {sprintf "; %s" f}
+	SEMICOLON f=field_list {f}
 
 line_case_field_list:
-	c=separated_nonempty_list(COMA,constant) COLON LPAR f=field_list RPAR {sprintf "%s : ( %s )" (String.concat "" c) f}
+	c=separated_nonempty_list(COMA,constant) COLON LPAR f=field_list RPAR {AST.line_case_field_list:(c, f)}
 
 field_list:
 	i=separated_nonempty_list(COMA, ID) COLON t=type_automate sfl=semicolon_field_list?
 	{
-		let sstr = extract sfl 
+		let result = function
+		(i,t,None) -> Recur(i, t)
+		|(i,t,Some x) -> RecurPlus(i,t,x)
 		in
-		sprintf "%s : %s %s" (String.concat "" i) t sstr}
-	| CASE i=ID COLON t=type_identifier OF p=separated_nonempty_list(SEMICOLON,line_case_field_list) {sprintf "case %s : %s of %s "i t (String.concat "" p)}
-
-
+		result (i,t,sfl)}
+	| CASE i=ID COLON t=type_identifier OF p=separated_nonempty_list(SEMICOLON,line_case_field_list) {FCase(i,t,p)}
 
 (* automate : simple expression *)
 (* genial remplace ça : *)
 recur_simple_expression:
-	si=signe t2=term {sprintf "%s %s" si t2}
+	si=signe t2=term {(si,t2)}
 
 simple_expression:
 	s=signe? t=term r=recur_simple_expression*
 	(* s=signe? genial=separated_nonempty_list(signe, term) *)
 	{
-		let sstr = extract s
+		let result  = function
+		(None, t, r) -> USigned(t,r)
+		|(Some x, t, r) -> Signed(x,t,r)
 		in
-		sprintf "%s %s %s" sstr t (String.concat "" r)
+		result (s,t,r)
 	}
 
 (* automate : variable *)
 
 boucle_intern_variable:
-	LBR e= separated_nonempty_list(COMA,expression) RBR {sprintf " [ %s ]"(String.concat "" e)}
+	LBR e= separated_nonempty_list(COMA,expression) RBR {Brackety(e)}
 	(* cette partie là fou la merde totale !!!!! esoterique*)
-	 | DOT i = VARID {sprintf ". %s" i}
+	 | DOT i = VARID {Dotty(i)}
 
 variable :
 	(* triste *)
-	i=VARID b=boucle_intern_variable* {sprintf "%s %s" i (String.concat "" b)}
+	i=VARID b=boucle_intern_variable* {AST.variable:(i,b)}
 
 
 (* automate factor *)
@@ -154,107 +153,110 @@ after_function_identifier:
 *)
 
 after_function_identifier:
-	LPAR e=separated_nonempty_list(COMA,expression)  RPAR {sprintf " ( %s )" (String.concat "" e)}
+	LPAR e=separated_nonempty_list(COMA,expression)  RPAR {e}
 
 after_LBR:
-	e=separated_nonempty_list(COMA, expression) { sprintf "%s" (String.concat "" e)}
+	e=separated_nonempty_list(COMA, expression) {e}
 
 factor:
 	(* les 3 suivantes *)
-	u = unsigned_constant {u}
-	| v = variable {v}
+	u = unsigned_constant {Uconst(u)}
+	| v = variable {Var(v)}
 	|funct = ID a=after_function_identifier? 
 	{
-	let afi = extract a
+	let result = function
+	(funct, None) -> Function(funct, [])
+	|(funct, Some exp) -> Function(funct, exp)
 	in
-	sprintf "%s %s" funct afi
+	result (funct, a)
 	}
-	|DOTLPAR e = expression RPAR {sprintf " ( %s )" e}
-	|NOT f = factor {sprintf "!%s" f}
+	|DOTLPAR e = expression RPAR {Expression(e)}
+	|NOT f = factor {Neg_factor(f)}
 	|LBR a=after_LBR? RBR 
 	{
-	let aflbr = extract a
+	let result = function
+	None -> Brackets([])
+	| Some x -> Brackets(x)
 	in
-	sprintf "[%s]" aflbr
+	result a
 	}
 
 (* automate term *)
 
 operator_term:
-	MULT {sprintf "*"}
-	|DIV {sprintf "/"}
-	|MOD {sprintf "mod"}
-	|PUIS {sprintf "^"}
+	MULT {Times}
+	|DIV {Div}
+	|MOD {Mod}
+	|PUIS {Pow} (*One of us, one of us*)
 
 mult_factor:
-	o = operator_term f = factor {sprintf "%s %s" o f} 	
+	o = operator_term f = factor {(o,f)} 	
 
 term:
-	f = factor m = mult_factor* {sprintf "%s %s" f (String.concat "" m)}
+	f = factor m = mult_factor* {AST.term:(f,m)}
 
 
 
 (* automate expression *)
 
 opexp:
-	EQ {sprintf "="}
-	|NOTEQ {sprintf "!="}
-	|LT {sprintf "<"}
-	|GT {sprintf ">"}
-	|LE {sprintf "<="}
-	|GE {sprintf ">="}
-	|IN {sprintf "in"}
+	EQ {Eq}
+	|NOTEQ {Neq} (*WTFBBQ?*)
+	|LT {Lt}
+	|GT {Gt}
+	|LE {Le}
+	|GE {Ge}
+	|IN {In}
 
 opexp_with_simple_expression:
-	o = opexp s2 = simple_expression {sprintf "%s %s" o s2}
+	o = opexp s2 = simple_expression {(o,s2)}
 
 expression:
 	s = simple_expression o=opexp_with_simple_expression?
 	{
-	let owse = extract o
-	in
-	sprintf "%s %s" s owse
+	let result = function
+	(s, None) -> ESimple(s)
+	|(s,Some (o, s2)) -> EOperation (s,o,s2)
 	}
-
 
 
 (* automate statement *)
 
 expr_or_procid:
-	id = ID {id}
-	| e = expression {e}
+	id = ID {Id(id)}
+	| e = expression {Expr(e)}
 
 expr_proc:
-	LPAR i=separated_nonempty_list(COMA,expr_or_procid) RPAR {sprintf "( %s )" (String.concat "" i)}
+	LPAR i=separated_nonempty_list(COMA,expr_or_procid) RPAR {i}
 
 single_case:
-	c = separated_nonempty_list(COMA,constant) COLON s = statement {sprintf "%s : %s" (String.concat "" c) s}
+	c = separated_nonempty_list(COMA,constant) COLON s = statement {AST.single_case:(c, s)}
 
 incr_decr:
-	TO {sprintf "to"}
-	|DOWNTO {sprintf "downto"}
+	TO {To}
+	|DOWNTO {Downto}
 
 (*else_pos:
 	ELSE s = statement {sprintf "else %s" s}	*)
 
 variable_or_id:
-	v = variable {v}
-	|func = ID {func} 
+	v = variable {Variable(v)}
+	|func = ID {Id2(func)} 
 
 after_of_statement:
 	c=separated_nonempty_list(COMA,constant) COLON s = statement { sprintf "%s : %s" (String.concat "" c) s}
 
 statement:
 (* oui statement peut etre vide *)
-	|v = variable_or_id COLONEQ e = expression {sprintf "%s := %s" v e}
-	|i = ID e = expr_proc? {let expr = extract e in sprintf "%s" expr}
-	|BEGIN s = separated_nonempty_list(SEMICOLON, statement) END {sprintf "%s" (String.concat "" s)}
-	|IF e = expression THEN s = statement {sprintf "if %s then %s " e s}   
-	|IF e = expression THEN s = statement ELSE s2 = statement {sprintf "if %s then %s else %s" e s s2}
-	|CASE e = expression OF a = separated_nonempty_list(SEMICOLON, after_of_statement) END {sprintf "case %s of %s end" e (String.concat "" a)}
-	|WHILE e= expression DO s = statement {sprintf "while %s do %s" e s}
-	|REPEAT s = separated_nonempty_list(SEMICOLON, statement) UNTIL e = expression {sprintf "repeat %s until %s" (String.concat "" s) e}
-	|FOR i = VARID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {sprintf "for %s := %s %s %s do %s" i e inc e2 s} 
+	|v = variable_or_id COLONEQ e = expression {Affect(v,e)}
+	|i = ID e = expr_proc? {let result = function (i, None) -> Wut(i,[])| (i, Some x) -> Wut(i,x) in result (i,e)}
+	|BEGIN s = separated_nonempty_list(SEMICOLON, statement) END {Embedded(s)}
+	|IF e = expression THEN s = statement {IfThen(e,s)}   
+	|IF e = expression THEN s = statement ELSE s2 = statement {IfThenElse(e,s,s2)}
+	|CASE e = expression OF a = separated_nonempty_list(SEMICOLON, single_case) END {Case(e,a)}
+	|WHILE e= expression DO s = statement {While(e,s)}
+	|REPEAT s = separated_nonempty_list(SEMICOLON, statement) UNTIL e = expression {Repeat(s,e)}
+	|FOR i = VARID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {For(i,e,inc,e2,s)} 
 
 (* BLOCK *)
 
@@ -262,34 +264,34 @@ statement:
 (*Constante*)
 init_const:
 	i = VARID EQ c = constant SEMICOLON 
-	{sprintf "%s = %s ;" i c}
+	{AST:init_const(i,c)}
 
 block_const:
 	CONST
 	i = init_const+
-	{sprintf "const\n %s" (String.concat "" i)}
+	{AST.block_const:i}
 
 
 (*Type*)
 init_type:
 	i = VARID EQ t = type_automate SEMICOLON
-	{sprintf "%s = %s ;" i t}
+	{AST.init_type:(i,t)}
 
 block_type:
     TYPE
     i = init_type+
-    {sprintf "type\n %s" (String.concat "" i)}
+    {AST.block_type:i}
 
 
 (*Var*)
 
 init_var:
-	i = separated_nonempty_list(COMA, VARID) COLON t = type_automate SEMICOLON {sprintf "%s : %s ;" (String.concat "" i) t}
+	i = separated_nonempty_list(COMA, VARID) COLON t = type_automate SEMICOLON {AST.init_var(i,t)}
 
 block_var:
 	VAR
 	i = init_var+
-	{sprintf "var\n %s" (String.concat "" i)}
+	{AST.block_var:i}
 
 
 (*Procedure et Function*)
@@ -309,38 +311,49 @@ parameter_list:
 
 (*Procedure et Function*)
 mult_parameter:
-SEMICOLON p = under_parameter_list {sprintf "; %s" p}
+SEMICOLON p = under_parameter_list {p}
 
 under_parameter_list:
-i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {sprintf "%s : %s" (String.concat "" i) t }
-| i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier mp = mult_parameter {sprintf "%s : %s %s" (String.concat "" i) t mp}
+i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {ClassicParameter(i,t,[])}
+| i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier mp = mult_parameter {ClassicParameter(i,t,mp)}
 
-| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {sprintf "function %s : %s " (String.concat "" i) t }
-| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter {sprintf "function %s : %s %s " (String.concat "" i) t mp}
+| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {FunctionParameter(i,t,[]) }
+| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter {FunctionParameter(i,t,mp)}
 
-| VAR i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {sprintf "var %s : %s " (String.concat "" i) t}
-| VAR i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier mp = mult_parameter {sprintf "var %s : %s %s " (String.concat "" i) t mp}
+| VAR i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {VariableParameter(i,t,[])}
+| VAR i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier mp = mult_parameter {VariableParameter(i,t,mp)}
 
-| PROCEDURE i = separated_nonempty_list(COMA,ID) {sprintf "procedure %s " (String.concat "" i)}
-| PROCEDURE i = separated_nonempty_list(COMA,ID) mp = mult_parameter {sprintf "procedure %s %s" (String.concat "" i) mp}
+| PROCEDURE i = separated_nonempty_list(COMA,ID) {ProcedureParameter(i,[])}
+| PROCEDURE i = separated_nonempty_list(COMA,ID) mp = mult_parameter {ProcedureParameter(i, mp)}
 
 
 parameter_list:
-LPAR u = under_parameter_list RPAR {sprintf "( %s )" u }
+LPAR u = under_parameter_list RPAR {u}
 
 procedure:
 	PROCEDURE i = ID pa = parameter_list? SEMICOLON b = block SEMICOLON
 	{
-		let para = extract pa
+		let para = (function None -> [] | Some x -> x) pa
 	in
-	sprintf "procedure %s %s ; %s ;" i para b}	
+		{
+			proc_name = i;
+			proc_parameters = para;
+			proc_body = b;
+		}
+	}	
 	(* fonction *)
 function_bl:
 	FUNCTION i = ID pa = parameter_list? COLON t = type_identifier SEMICOLON b = block SEMICOLON
 	{
-		let para = extract pa
+		let para = (function None -> [] | Some x -> x) pa
 	in
-	sprintf "function %s %s : %s ; %s ;" i para t b}
+		{
+			func_name = i;
+			func_parameters = para;
+			func_return_type = t;
+			func_body = b;
+		}
+	}
 
 (* Main block *)
 
@@ -360,12 +373,18 @@ block:
 		s = separated_list(SEMICOLON, statement)
 	END
 	{ 
-			let cons = extract bc in
-			let types = extract bt in 
-			let vars = extract bv
+			let cons = (function None -> [] | Some x -> x) bc in
+			let t = (function None -> [] | Some x -> x) bt in 
+			let vars = (function None -> [] | Some x -> x) bv
 		in
-		sprintf "%s \n %s \n %s \n %s \n %s \n begin\n %s end" cons types vars (String.concat "" pro) (String.concat "" func) (String.concat "" s) }
-
+		{
+			constants = cons;
+			types = t;
+			variables = vars;
+			procedures = pro;
+			functions = func;	
+		}	
+	}
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
@@ -382,6 +401,9 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n %s.\n" i b}
+	{{
+		prog_name = i;
+		prog_body = block;
+	}}
 
 %%
