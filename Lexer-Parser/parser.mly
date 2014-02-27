@@ -247,6 +247,7 @@ statement:
 (* oui statement peut etre vide *)
 	|v = variable_or_id COLONEQ e = expression {sprintf "%s := %s" v e}
 	|i = ID e = expr_proc? {let expr = extract e in sprintf "%s" expr}
+	|BEGIN s = separated_nonempty_list(SEMICOLON, statement) END {sprintf "%s" (String.concat "" s)}
 	|IF e = expression THEN s = statement {sprintf "if %s then %s " e s}   
 	|IF e = expression THEN s = statement ELSE s2 = statement {sprintf "if %s then %s else %s" e s s2}
 	|CASE e = expression OF a = separated_nonempty_list(SEMICOLON, after_of_statement) END {sprintf "case %s of %s end" e (String.concat "" a)}
