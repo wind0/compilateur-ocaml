@@ -1,4 +1,3 @@
-
 (* Track 1: Identifier(s?) *) 
 (* 	One type to rule them all, One type to define them, 
 	One type to bring them all and in the darkness bind them *)
@@ -14,23 +13,24 @@ TypInteger
 
 (* Track 3: Constants and shit*)
 type unsigned_constant =
-|Identified of identifier
-|Integer of int32
+|UInteger of int32
+|UString of string
 type unsigned_constant_nil =
-|Normal of unsigned_constant
+|UNormal of unsigned_constant
 |Nil
 (*| String of string *)
 
 type sign = 
-|PLUS
-|MINUS
+|Plus
+|Minus
 and burne = 
-|Identified of identifier
-|Integer of int32
+|BIdentified of identifier
+|BInteger of int32
 and constant = 
 (*String of string*)
 |SignedBurne of (sign * burne)
 |Burne of burne
+|CString of string
 
 (* Track 4: Types returns! *)
 type simple_type =
@@ -95,8 +95,8 @@ and simple_expression =
 |USigned of term * (sign * term) list
 
 and expression =
-|Simple of simple_expression
-|Operation of simple_expression * log_bin_op * simple_expression
+|ESimple of simple_expression
+|EOperation of simple_expression * log_bin_op * simple_expression
 
 (* Track 8: BRB, vomiting blood *)
 type expr_or_procid =(* this name...*)
@@ -105,7 +105,7 @@ type expr_or_procid =(* this name...*)
 
 type variable_or_id = 
 |Variable of variable
-|Id of identifier
+|Id2 of identifier
 
 type incr_or_decr = 
 |To
