@@ -381,7 +381,8 @@ block:
 			types = t;
 			variables = vars;
 			procedures = pro;
-			functions = func;	
+			functions = func;
+			statements = s;
 		}	
 	}
 (* pseudo main : Structure principale d'un programme PASCAL *)
