@@ -61,6 +61,7 @@ type log_bin_op =
   | Ge
   | Eq
   | Neq
+  | In
 
 type operator_term =
 |Times
