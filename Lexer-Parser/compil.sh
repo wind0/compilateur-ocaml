@@ -3,7 +3,7 @@ set -e -u
 rm -f module/*.cmi module/*.cmo
 ocamlc AST.mli
 ocamlc -c error.ml
-menhir -v --infer --explain --dump parserHELIX.mly 
+menhir -v --graph --infer --explain --dump parserHELIX.mly 
 ocamllex lexer.mll 
 ocamlc -c parserHELIX.mli 
 ocamlc -c lexer.ml 
