@@ -14,6 +14,7 @@ TypInteger
 (* Track 3: Constants and shit*)
 type unsigned_constant =
 |Integer of int32
+|UString of string
 type unsigned_constant_nil =
 |Normal of unsigned_constant
 |Nil
