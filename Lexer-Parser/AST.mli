@@ -112,21 +112,18 @@ type incr_or_decr =
 |To
 |Downto
 
-type single_case = constant list * real_statement
+type single_case = constant list * statement
 
 and statement =
 |Affect of variable_or_id * expression
 |Wut of identifier * expr_or_procid list (*remplacer Wut par ce que c'est en vrai*)
-|IfThen of expression * real_statement
-|IFThenElse of expression * real_statement * real_statement
+|IfThen of expression * statement
+|IFThenElse of expression * statement * statement
 |Case of expression * single_case list
-|While of expression * real_statement
-|Repeat of real_statement list * expression
-|For of identifier * expression * incr_or_decr * expression * real_statement
+|While of expression * statement
+|Repeat of statement list * expression
+|For of identifier * expression * incr_or_decr * expression * statement
 
-and real_statement =
-|Labelled of int32 * statement
-|NotLabelled of statement
 
 (* Track 9: How is this not over yet?*)
 
