@@ -260,7 +260,7 @@ statement:
 
 (*Constante*)
 init_const:
-	i = ID EQ c = constant SEMICOLON 
+	i = VARID EQ c = constant SEMICOLON 
 	{sprintf "%s = %s ;" i c}
 
 block_const:
@@ -271,7 +271,7 @@ block_const:
 
 (*Type*)
 init_type:
-	i = ID EQ t = type_automate SEMICOLON
+	i = VARID EQ t = type_automate SEMICOLON
 	{sprintf "%s = %s ;" i t}
 
 block_type:
@@ -283,7 +283,7 @@ block_type:
 (*Var*)
 
 init_var:
-	i = separated_nonempty_list(COMA, ID) COLON t = type_automate SEMICOLON {sprintf "%s : %s ;" (String.concat "" i) t}
+	i = separated_nonempty_list(COMA, VARID) COLON t = type_automate SEMICOLON {sprintf "%s : %s ;" (String.concat "" i) t}
 
 block_var:
 	VAR
@@ -311,14 +311,14 @@ mult_parameter:
 SEMICOLON p = under_parameter_list {sprintf "; %s" p}
 
 under_parameter_list:
-i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {sprintf "%s : %s" (String.concat "" i) t }
-| i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter {sprintf "%s : %s %s" (String.concat "" i) t mp}
+i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {sprintf "%s : %s" (String.concat "" i) t }
+| i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier mp = mult_parameter {sprintf "%s : %s %s" (String.concat "" i) t mp}
 
 | FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {sprintf "function %s : %s " (String.concat "" i) t }
 | FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter {sprintf "function %s : %s %s " (String.concat "" i) t mp}
 
-| VAR i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {sprintf "var %s : %s " (String.concat "" i) t}
-| VAR i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter {sprintf "var %s : %s %s " (String.concat "" i) t mp}
+| VAR i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {sprintf "var %s : %s " (String.concat "" i) t}
+| VAR i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier mp = mult_parameter {sprintf "var %s : %s %s " (String.concat "" i) t mp}
 
 | PROCEDURE i = separated_nonempty_list(COMA,ID) {sprintf "procedure %s " (String.concat "" i)}
 | PROCEDURE i = separated_nonempty_list(COMA,ID) mp = mult_parameter {sprintf "procedure %s %s" (String.concat "" i) mp}
@@ -356,7 +356,7 @@ block:
 		(*s = simple_type* *)
 		(*t = type_automate* *)
 		(*f = field_list* *)
-		s = separated_nonempty_list(SEMICOLON, statement)
+		s = separated_list(SEMICOLON, statement)
 	END
 	{ 
 			let cons = extract bc in
@@ -368,8 +368,8 @@ block:
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:
 	PROGRAM i = ID SEMICOLON
-		(*b = block *)
-		e = statement*
+		b = block
+		(*e = statement* *)
 	DOT
 	(*{
 		let extract = fun rechercher ->
@@ -381,6 +381,6 @@ program:
 		in
 		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
 	*)
-	{printf "program %s;\n %s.\n" i (*b*)(String.concat "" e)}
+	{printf "program %s;\n %s.\n" i b}
 
 %%
