@@ -30,6 +30,7 @@ and constant =
 (*String of string*)
 |SignedBurne of (sign * burne)
 |Burne of burne
+|CString of string
 
 (* Track 4: Types returns! *)
 type simple_type =
