@@ -69,6 +69,7 @@ unary_signe_with_constant_id_OR_unsigned_number :
 		{ sprintf "- %s" uc2}
 	| uc3 = constant_id_OR_unsigned_number {uc3}
 
+
 constant:
 	u = unary_signe_with_constant_id_OR_unsigned_number
 	{ u }
