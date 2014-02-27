@@ -1,4 +1,3 @@
-
 (* Track 1: Identifier(s?) *) 
 (* 	One type to rule them all, One type to define them, 
 	One type to bring them all and in the darkness bind them *)
@@ -22,8 +21,8 @@ type unsigned_constant_nil =
 (*| String of string *)
 
 type sign = 
-|PLUS
-|MINUS
+|Plus
+|Minus
 and burne = 
 |Identified of identifier
 |Integer of int32
