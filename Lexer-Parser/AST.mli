@@ -13,7 +13,6 @@ TypInteger
 
 (* Track 3: Constants and shit*)
 type unsigned_constant =
-|Identified of identifier
 |Integer of int32
 type unsigned_constant_nil =
 |Normal of unsigned_constant
@@ -104,7 +103,7 @@ type expr_or_procid =(* this name...*)
 
 type variable_or_id = 
 |Variable of variable
-|Id of identifier
+|Id2 of identifier
 
 type incr_or_decr = 
 |To
