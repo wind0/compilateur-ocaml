@@ -119,7 +119,7 @@ and statement =
 |Wut of identifier * expr_or_procid list (*remplacer Wut par ce que c'est en vrai*)
 |Embedded of statement list
 |IfThen of expression * statement
-|IFThenElse of expression * statement * statement
+|IfThenElse of expression * statement * statement
 |Case of expression * single_case list
 |While of expression * statement
 |Repeat of statement list * expression
@@ -140,13 +140,14 @@ type init_var = identifier list * type_automate
 
 type block_var = init_var list
 
-type parameter_list = parameter list (*Well shit*)
+type parameter_list = parameter (*Well shit*)
 
 and parameter = 
-|ClassicParameter of identifier list * typ * parameter list
-|FunctionParameter of identifier list * typ * parameter list
-|VariableParameter of identifier list * typ * parameter list (*Hummmmm*)
-|ProcedureParameter of identifier list * parameter list
+|NoneParameter
+|ClassicParameter of identifier list * typ * parameter
+|FunctionParameter of identifier list * typ * parameter
+|VariableParameter of identifier list * typ * parameter (*Hummmmm*)
+|ProcedureParameter of identifier list * parameter
 
 (* Track 10: Supa Finishu!*)
 (*A voir si ya besoin de les remplacer par des record*)

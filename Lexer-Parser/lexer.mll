@@ -1,7 +1,7 @@
 {
   open Lexing
   open Printf
-  open Parser
+  open ParserHELIX
   open Error
 
     let update_loc lexbuf =
@@ -80,7 +80,7 @@ newline {token lexbuf}
 |"to" { TO }
 |"downto" { DOWNTO }
 |integer as i { try INTC (Int32.of_string i) with Failure _ -> Error.error lexbuf "integer cast failed"}
-|"'"([^''']* as s)"'" {STRING s}
+|"'"([^''']* as s)"'" {STRINGC s}
 |varid as v { VARID v }
 |identifier as id { ID id }
 

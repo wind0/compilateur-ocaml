@@ -25,10 +25,10 @@
 %token VAR CONST TYPE PROCEDURE FUNCTION
 %token IF THEN ELSE CASE
 %token WHILE DO REPEAT UNTIL FOR TO DOWNTO
-
+%token <string> STRINGC
 (* Start du parser *)
 %start program
-%type <unit> program
+%type <AST.program> program
 
 %nonassoc COLONEQ
 %nonassoc unary_minus unary_plus
@@ -46,9 +46,9 @@
 
 unsigned_constant : 
 	(*i = ID {i}*) 
-	integ = INTC {Normal(Integer(integ))}
+	integ = INTC {UNormal(UInteger(integ))}
 	|NIL {Nil}
-	|SIMPLECOTE id = ID SIMPLECOTE {Normal(UString(id))}
+	|id = STRINGC {UNormal(UString(id))}
 
 (* automate : constant *)
 signe : 
@@ -57,7 +57,7 @@ signe :
 
 constant_id_OR_unsigned_number:
 	i = VARID {BIdentified(i)}
-	|integ = INTC {Binteger(integ)}
+	|integ = INTC {BInteger(integ)}
 
 unary_signe_with_constant_id_OR_unsigned_number :
 	PLUS uc = constant_id_OR_unsigned_number %prec unary_plus 
@@ -70,7 +70,7 @@ unary_signe_with_constant_id_OR_unsigned_number :
 constant:
 	u = unary_signe_with_constant_id_OR_unsigned_number
 	{ u }
-	|SIMPLECOTE id = VARID SIMPLECOTE {CString(id)}
+	|id = STRINGC {CString(id)}
 
 (* automate : simple type *)
 
@@ -89,7 +89,7 @@ simple_type:
 (* automate : type *)
 
 array_para_recur_simple_type:
-	ARRAY LBR i = separated_nonempty_list(COMA, simple_type) RBR OF typ=type_automate {AST.array_type_automate:(i,typ)}
+	ARRAY LBR i = separated_nonempty_list(COMA, simple_type) RBR OF typ=type_automate {(i,typ)}
 
 type_automate:
 	s = simple_type {Simple(s)}
@@ -101,7 +101,7 @@ semicolon_field_list:
 	SEMICOLON f=field_list {f}
 
 line_case_field_list:
-	c=separated_nonempty_list(COMA,constant) COLON LPAR f=field_list RPAR {AST.line_case_field_list:(c, f)}
+	c=separated_nonempty_list(COMA,constant) COLON LPAR f=field_list RPAR {(c, f)}
 
 field_list:
 	i=separated_nonempty_list(COMA, ID) COLON t=type_automate sfl=semicolon_field_list?
@@ -138,7 +138,7 @@ boucle_intern_variable:
 
 variable :
 	(* triste *)
-	i=VARID b=boucle_intern_variable* {AST.variable:(i,b)}
+	i=VARID b=boucle_intern_variable* {(i,b)}
 
 
 (* automate factor *)
@@ -160,7 +160,7 @@ after_LBR:
 
 factor:
 	(* les 3 suivantes *)
-	u = unsigned_constant {Uconst(u)}
+	u = unsigned_constant {UConst(u)}
 	| v = variable {Var(v)}
 	|funct = ID a=after_function_identifier? 
 	{
@@ -193,7 +193,7 @@ mult_factor:
 	o = operator_term f = factor {(o,f)} 	
 
 term:
-	f = factor m = mult_factor* {AST.term:(f,m)}
+	f = factor m = mult_factor* {(f,m)}
 
 
 
@@ -217,6 +217,7 @@ expression:
 	let result = function
 	(s, None) -> ESimple(s)
 	|(s,Some (o, s2)) -> EOperation (s,o,s2)
+	in result(s,o)
 	}
 
 
@@ -230,7 +231,7 @@ expr_proc:
 	LPAR i=separated_nonempty_list(COMA,expr_or_procid) RPAR {i}
 
 single_case:
-	c = separated_nonempty_list(COMA,constant) COLON s = statement {AST.single_case:(c, s)}
+	c = separated_nonempty_list(COMA,constant) COLON s = statement {(c, s)}
 
 incr_decr:
 	TO {To}
@@ -243,8 +244,6 @@ variable_or_id:
 	v = variable {Variable(v)}
 	|func = ID {Id2(func)} 
 
-after_of_statement:
-	c=separated_nonempty_list(COMA,constant) COLON s = statement { sprintf "%s : %s" (String.concat "" c) s}
 
 statement:
 (* oui statement peut etre vide *)
@@ -264,34 +263,34 @@ statement:
 (*Constante*)
 init_const:
 	i = VARID EQ c = constant SEMICOLON 
-	{AST:init_const(i,c)}
+	{(i,c)}
 
 block_const:
 	CONST
 	i = init_const+
-	{AST.block_const:i}
+	{i}
 
 
 (*Type*)
 init_type:
 	i = VARID EQ t = type_automate SEMICOLON
-	{AST.init_type:(i,t)}
+	{(i,t)}
 
 block_type:
     TYPE
     i = init_type+
-    {AST.block_type:i}
+    {i}
 
 
 (*Var*)
 
 init_var:
-	i = separated_nonempty_list(COMA, VARID) COLON t = type_automate SEMICOLON {AST.init_var(i,t)}
+	i = separated_nonempty_list(COMA, VARID) COLON t = type_automate SEMICOLON {(i,t)}
 
 block_var:
 	VAR
 	i = init_var+
-	{AST.block_var:i}
+	{i}
 
 
 (*Procedure et Function*)
@@ -314,16 +313,16 @@ mult_parameter:
 SEMICOLON p = under_parameter_list {p}
 
 under_parameter_list:
-i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {ClassicParameter(i,t,[])}
+i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {ClassicParameter(i,t,NoneParameter)}
 | i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier mp = mult_parameter {ClassicParameter(i,t,mp)}
 
-| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {FunctionParameter(i,t,[]) }
+| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {FunctionParameter(i,t,NoneParameter) }
 | FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter {FunctionParameter(i,t,mp)}
 
-| VAR i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {VariableParameter(i,t,[])}
+| VAR i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {VariableParameter(i,t,NoneParameter)}
 | VAR i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier mp = mult_parameter {VariableParameter(i,t,mp)}
 
-| PROCEDURE i = separated_nonempty_list(COMA,ID) {ProcedureParameter(i,[])}
+| PROCEDURE i = separated_nonempty_list(COMA,ID) {ProcedureParameter(i,NoneParameter)}
 | PROCEDURE i = separated_nonempty_list(COMA,ID) mp = mult_parameter {ProcedureParameter(i, mp)}
 
 
@@ -333,7 +332,7 @@ LPAR u = under_parameter_list RPAR {u}
 procedure:
 	PROCEDURE i = ID pa = parameter_list? SEMICOLON b = block SEMICOLON
 	{
-		let para = (function None -> [] | Some x -> x) pa
+		let para = (function None -> NoneParameter | Some x -> x) pa
 	in
 		{
 			proc_name = i;
@@ -345,7 +344,7 @@ procedure:
 function_bl:
 	FUNCTION i = ID pa = parameter_list? COLON t = type_identifier SEMICOLON b = block SEMICOLON
 	{
-		let para = (function None -> [] | Some x -> x) pa
+		let para = (function None -> NoneParameter | Some x -> x) pa
 	in
 		{
 			func_name = i;
@@ -403,7 +402,7 @@ program:
 	*)
 	{{
 		prog_name = i;
-		prog_body = block;
+		prog_body = b;
 	}}
 
 %%
