@@ -117,6 +117,7 @@ type single_case = constant list * statement
 and statement =
 |Affect of variable_or_id * expression
 |Wut of identifier * expr_or_procid list (*remplacer Wut par ce que c'est en vrai*)
+|Embedded of statement list
 |IfThen of expression * statement
 |IFThenElse of expression * statement * statement
 |Case of expression * single_case list
