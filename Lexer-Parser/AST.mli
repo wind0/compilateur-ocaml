@@ -43,7 +43,7 @@ type simple_type =
 type field_list = 
 |Recur of (identifier list ) * type_automate
 |RecurPlus of (identifier list) * type_automate * field_list
-|Case of identifier * typ * line_case_field_list list
+|FCase of identifier * typ * line_case_field_list list
 and line_case_field_list = (*F*** this name*)
 constant list * field_list
 and type_automate = (*F*** this name too*)
