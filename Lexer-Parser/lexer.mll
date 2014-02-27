@@ -39,7 +39,6 @@ newline {token lexbuf}
 |"integer" { INTEGER }
 |"boolean" { BOOLEAN }
 |"nil" { NIL }
-|"of" { OF }
 |"'" { SIMPLECOTE }
 |"+" { PLUS }
 |"-" { MINUS }

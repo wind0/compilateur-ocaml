@@ -59,7 +59,7 @@ signe :
 	| MINUS {sprintf "-"}
 
 constant_id_OR_unsigned_number:
-	i = ID {i}
+	i = VARID {i}
 	|integ = INTC {sprintf " %li" integ}
 
 unary_signe_with_constant_id_OR_unsigned_number :
@@ -72,7 +72,7 @@ unary_signe_with_constant_id_OR_unsigned_number :
 constant:
 	u = unary_signe_with_constant_id_OR_unsigned_number
 	{ u }
-	|SIMPLECOTE id = ID SIMPLECOTE {sprintf " ' %s ' " id}
+	|SIMPLECOTE id = VARID SIMPLECOTE {sprintf " ' %s ' " id}
 
 (* automate : simple type *)
 
@@ -240,13 +240,16 @@ variable_or_id:
 	v = variable {v}
 	|func = ID {func} 
 
+after_of_statement:
+	c=separated_nonempty_list(COMA,constant) COLON s = statement { sprintf "%s : %s" (String.concat "" c) s}
+
 statement:
 (* oui statement peut etre vide *)
 	|v = variable_or_id COLONEQ e = expression {sprintf "%s := %s" v e}
 	|i = ID e = expr_proc? {let expr = extract e in sprintf "%s" expr}
 	|IF e = expression THEN s = statement {sprintf "if %s then %s " e s}   
-	|IF e = expression THEN s = statement ELSE s2 = statement {sprintf "if %s then %s else %s" e s s2}   
-	|CASE e = expression OF s = separated_nonempty_list(SEMICOLON,single_case) END {sprintf "case %s of %s end" e (String.concat "" s)}
+	|IF e = expression THEN s = statement ELSE s2 = statement {sprintf "if %s then %s else %s" e s s2}
+	|CASE e = expression OF a = separated_nonempty_list(SEMICOLON, after_of_statement) END {sprintf "case %s of %s end" e (String.concat "" a)}
 	|WHILE e= expression DO s = statement {sprintf "while %s do %s" e s}
 	|REPEAT s = separated_nonempty_list(SEMICOLON, statement) UNTIL e = expression {sprintf "repeat %s until %s" (String.concat "" s) e}
 	|FOR i = ID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {sprintf "for %s := %s %s %s do %s" i e inc e2 s} 
@@ -288,6 +291,7 @@ block_var:
 
 
 (*Procedure et Function*)
+(*
 mult_parameter:
 	SEMICOLON p = under_parameter_list {sprintf "; %s" p}
 
@@ -299,6 +303,28 @@ under_parameter_list:
 
 parameter_list:
 	LPAR u=under_parameter_list mp=mult_parameter* RPAR {sprintf "( %s %s )" u (String.concat "" mp)}
+*)
+
+(*Procedure et Function*)
+mult_parameter:
+SEMICOLON p = under_parameter_list {sprintf "; %s" p}
+
+under_parameter_list:
+i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {sprintf "%s : %s" (String.concat "" i) t }
+| i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter {sprintf "%s : %s %s" (String.concat "" i) t mp}
+
+| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {sprintf "function %s : %s " (String.concat "" i) t }
+| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter {sprintf "function %s : %s %s " (String.concat "" i) t mp}
+
+| VAR i = separated_nonempty_list(COMA,ID) COLON t = type_identifier {sprintf "var %s : %s " (String.concat "" i) t}
+| VAR i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter {sprintf "var %s : %s %s " (String.concat "" i) t mp}
+
+| PROCEDURE i = separated_nonempty_list(COMA,ID) {sprintf "procedure %s " (String.concat "" i)}
+| PROCEDURE i = separated_nonempty_list(COMA,ID) mp = mult_parameter {sprintf "procedure %s %s" (String.concat "" i) mp}
+
+
+parameter_list:
+LPAR u = under_parameter_list RPAR {sprintf "( %s )" u }
 
 procedure:
 	PROCEDURE i = ID pa = parameter_list? SEMICOLON b = block SEMICOLON
