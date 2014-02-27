@@ -170,6 +170,7 @@ types : block_type;
 variables : block_var;
 procedures : procedure list;
 functions : function_bl list;
+statements : statement list;
 }
 
 type program = {
