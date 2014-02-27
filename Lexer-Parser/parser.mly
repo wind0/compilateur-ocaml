@@ -227,7 +227,7 @@ expr_proc:
 	LPAR i=separated_nonempty_list(COMA,expr_or_procid) RPAR {sprintf "( %s )" (String.concat "" i)}
 
 single_case:
-	c = separated_nonempty_list(COMA,constant) COLON s = real_statement {sprintf "%s : %s" (String.concat "" c) s}
+	c = separated_nonempty_list(COMA,constant) COLON s = statement {sprintf "%s : %s" (String.concat "" c) s}
 
 incr_decr:
 	TO {sprintf "to"}
@@ -235,9 +235,6 @@ incr_decr:
 
 (*else_pos:
 	ELSE s = statement {sprintf "else %s" s}	*)
-
-petit_bout_manquant:
-	i=INTC COLON {sprintf "%li : "i}
 
 variable_or_id:
 	v = variable {v}
@@ -247,15 +244,12 @@ statement:
 (* oui statement peut etre vide *)
 	|v = variable_or_id COLONEQ e = expression {sprintf "%s := %s" v e}
 	|i = ID e = expr_proc? {let expr = extract e in sprintf "%s" expr}
-	|IF e = expression THEN s = real_statement {sprintf "if %s then %s " e s}   
-	|IF e = expression THEN s = real_statement ELSE s2 = real_statement {sprintf "if %s then %s else %s" e s s2}   
+	|IF e = expression THEN s = statement {sprintf "if %s then %s " e s}   
+	|IF e = expression THEN s = statement ELSE s2 = statement {sprintf "if %s then %s else %s" e s s2}   
 	|CASE e = expression OF s = separated_nonempty_list(SEMICOLON,single_case) END {sprintf "case %s of %s end" e (String.concat "" s)}
-	|WHILE e= expression DO s = real_statement {sprintf "while %s do %s" e s}
-	|REPEAT s = separated_nonempty_list(SEMICOLON, real_statement) UNTIL e = expression {sprintf "repeat %s until %s" (String.concat "" s) e}
-	|FOR i = ID COLONEQ e = expression inc = incr_decr e2 = expression DO s = real_statement {sprintf "for %s := %s %s %s do %s" i e inc e2 s} 
-
-real_statement:
-	|p=petit_bout_manquant? s=statement {let pe = extract p in sprintf "%s %s" pe s}
+	|WHILE e= expression DO s = statement {sprintf "while %s do %s" e s}
+	|REPEAT s = separated_nonempty_list(SEMICOLON, statement) UNTIL e = expression {sprintf "repeat %s until %s" (String.concat "" s) e}
+	|FOR i = ID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {sprintf "for %s := %s %s %s do %s" i e inc e2 s} 
 
 (* BLOCK *)
 
@@ -335,7 +329,7 @@ block:
 		(*s = simple_type* *)
 		(*t = type_automate* *)
 		(*f = field_list* *)
-		s = separated_nonempty_list(SEMICOLON, real_statement)
+		s = separated_nonempty_list(SEMICOLON, statement)
 	END
 	{ 
 			let cons = extract bc in
@@ -348,8 +342,8 @@ block:
 program:
 	PROGRAM i = ID SEMICOLON
 		(*b = block *)
-		e = variable*
-	DOTLPAR
+		e = statement*
+	DOT
 	(*{
 		let extract = fun rechercher ->
 		match rechercher with
