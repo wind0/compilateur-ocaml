@@ -19,7 +19,7 @@
 %token EQ NOTEQ LT GT LE GE IN NOT
 %token MINUS PLUS MULT DIV MOD PUIS
 %token COMA DOUBLEDOT
-%token RPAR LPAR
+%token RPAR LPAR DOTLPAR
 %token INTEGER BOOLEAN
 %token LBR RBR
 %token ARRAY OF
@@ -133,10 +133,11 @@ simple_expression:
 
 boucle_intern_variable:
 	LBR e= separated_nonempty_list(COMA,expression) RBR {sprintf " [ %s ]"(String.concat "" e)}
-	| DOT i = VARID {sprintf ". %s" i}
+	(* cette partie là fou la merde totale !!!!! esoterique*)
+	(* | DOT i = VARID {sprintf ". %s" i} *)
 
 variable :
-	(* triste *) 
+	(* triste *)
 	i=VARID b=boucle_intern_variable* {sprintf "%s %s" i (String.concat "" b)}
 
 
@@ -167,7 +168,7 @@ factor:
 	in
 	sprintf "%s %s" funct afi
 	}
-	|LPAR e = expression RPAR {sprintf " ( %s )" e}
+	|DOTLPAR e = expression RPAR {sprintf " ( %s )" e}
 	|NOT f = factor {sprintf "!%s" f}
 	|LBR a=after_LBR? RBR 
 	{
@@ -347,7 +348,7 @@ block:
 program:
 	PROGRAM i = ID SEMICOLON
 		(*b = block *)
-		e = expression*
+		e = variable*
 	DOT
 	(*{
 		let extract = fun rechercher ->
