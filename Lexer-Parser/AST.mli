@@ -13,10 +13,10 @@ TypInteger
 
 (* Track 3: Constants and shit*)
 type unsigned_constant =
-|Integer of int32
+|UInteger of int32
 |UString of string
 type unsigned_constant_nil =
-|Normal of unsigned_constant
+|UNormal of unsigned_constant
 |Nil
 (*| String of string *)
 
@@ -24,8 +24,8 @@ type sign =
 |Plus
 |Minus
 and burne = 
-|Identified of identifier
-|Integer of int32
+|BIdentified of identifier
+|BInteger of int32
 and constant = 
 (*String of string*)
 |SignedBurne of (sign * burne)
@@ -94,8 +94,8 @@ and simple_expression =
 |USigned of term * (sign * term) list
 
 and expression =
-|Simple of simple_expression
-|Operation of simple_expression * log_bin_op * simple_expression
+|ESimple of simple_expression
+|EOperation of simple_expression * log_bin_op * simple_expression
 
 (* Track 8: BRB, vomiting blood *)
 type expr_or_procid =(* this name...*)
