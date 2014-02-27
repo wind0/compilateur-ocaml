@@ -17,6 +17,8 @@ TypInteger
 type unsigned_constant =
 |Identified of identifier
 |Integer of int32
+type unsigned_constant_nil =
+|Normal of unsigned_constant
 |Nil
 (*| String of string *)
 
@@ -43,20 +45,7 @@ type field_list =
 |Recur of (identifier list ) * field_list
 |Value of simple_type (*... I guess*)
 
-(* Track 6: Variables*)
-type boucle_intern_variable =
-|Brackety of expression list
-|Dotty of identifier
-
-type variable = identifier * boucle_intern_variable list
-
-
-
 (*Bonus Track: operators*)
-type sign =
-  | Add
-  | Sub
-
 type log_bin_op =
   | Lt                                       
   | Le
@@ -71,24 +60,33 @@ type operator_term =
 |Mod
 |Pow
 
+(* Track 6: Variables*)
+type boucle_intern_variable =
+|Brackety of expression list
+|Dotty of identifier
+
+and variable = identifier * boucle_intern_variable list
+
+
+
 
 (* Track 7: Expressions (This is a goodie)*)
-type factor =
-|UConst of unsigned_constant
+and factor =
+|UConst of unsigned_constant_nil
 |Var of variable
-|Function of funct * expression list
+|Function of identifier * expression list
 |Expression of expression
 |Neg_factor of factor
-|Brackety of expression list
+|Brackets of expression list
 
 
-type term = factor * (operator_term * factor) list
+and term = factor * (operator_term * factor) list
 
-type simple_expression =
+and simple_expression =
 |Signed of sign * term * (sign * term) list
 |USigned of term * (sign * term) list
 
-type expression =
+and expression =
 |Simple of simple_expression
 |Operation of simple_expression * log_bin_op * simple_expression
 
@@ -101,10 +99,22 @@ type variable_or_id =
 |Variable of variable
 |Id of identifier
 
-type statement =
-|Affect of variable_or_id * expression
-|
+type incr_or_decr = 
+|To
+|Downto
 
-type real_statement =
+type single_case = constant list * real_statement
+
+and statement =
+|Affect of variable_or_id * expression
+|Wut of identifier * expr_or_procid list (*remplacer Wut par ce que c'est en vrai*)
+|IfThen of expression * real_statement
+|IFThenElse of expression * real_statement * real_statement
+|Case of expression * single_case list
+|While of expression * real_statement
+|Repeat of real_statement list * expression
+|For of identifier * expression * incr_or_decr * expression * real_statement
+
+and real_statement =
 |Labelled of int32 * statement
 |NotLabelled of statement
