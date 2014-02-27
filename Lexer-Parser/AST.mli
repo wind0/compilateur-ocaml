@@ -10,7 +10,6 @@ type identifier  = string
 type typ = 
 TypInteger
 |TypBoolean
-|TypArray of typ
 
 
 (* Track 3: Constants and shit*)
@@ -39,11 +38,20 @@ type simple_type =
 |ID_list of identifier list (* I guess *)
 |Enum of constant * constant
 
-(* Track 5: I don't really understand...*)
-
+(* Track 5: I don't really understand...and it shows*)
+(* please get better! *)
 type field_list = 
-|Recur of (identifier list ) * field_list
-|Value of simple_type (*... I guess*)
+|Recur of (identifier list ) * type_automate
+|RecurPlus of (identifier list) * type_automate * field_list
+|Case of identifier * typ * line_case_field_list list
+and line_case_field_list = (*F*** this name*)
+constant list * field_list
+and type_automate = (*F*** this name too*)
+|Simple of simple_type
+|Array of array_type_automate
+|Record of field_list
+and array_type_automate =
+simple_type list * type_automate
 
 (*Bonus Track: operators*)
 type log_bin_op =
@@ -118,3 +126,56 @@ and statement =
 and real_statement =
 |Labelled of int32 * statement
 |NotLabelled of statement
+
+(* Track 9: How is this not over yet?*)
+
+type init_const = identifier * constant
+
+type block_const = init_const list
+
+type init_type = identifier * type_automate
+
+type block_type = init_type list
+
+type init_var = identifier list * type_automate
+
+type block_var = init_var list
+
+type parameter_list = parameter list (*Well shit*)
+
+and parameter = 
+|ClassicParameter of identifier list * typ * parameter list
+|FunctionParameter of identifier list * typ * parameter list
+|VariableParameter of identifier list * typ * parameter list (*Hummmmm*)
+|ProcedureParameter of identifier list * parameter list
+
+(* Track 10: Supa Finishu!*)
+(*A voir si ya besoin de les remplacer par des record*)
+type procedure = {
+proc_name : identifier;
+proc_parameters : parameter_list;
+proc_body: block;
+}
+
+and function_bl = {
+func_name : identifier;
+func_parameters : parameter_list;
+func_return_type : typ;
+func_body : block;
+}
+
+and block = {
+constants : block_const;
+types : block_type;
+variables : block_var;
+procedures : procedure list;
+functions : function_bl list;
+}
+
+type program = {
+prog_name : identifier;
+prog_body : block;
+}
+
+
+
