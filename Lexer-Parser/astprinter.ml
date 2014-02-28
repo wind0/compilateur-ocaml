@@ -36,11 +36,21 @@ in print_list elem_list chan father max func
 	print_expr
 	print_expr_id_list
 	print_case_list
-	print_term
-	print_sign_term_list
+	print_sign_term
+	print_factor
+	print_op_term_fact
+	print_op_term_fact_list
 *)
 (*print un id*)
 let print_id = print_init (*mais chuuuut*)
+
+(*Termes*)
+let print_factor = fun (*j'en suis là*)
+
+let print_term = fun (fac, op_fact_list) chan father max ->
+let position = print_init "TERM" chan father max
+in let position2 = print_factor fac chan position position
+in print_op_term_fact_list op_fact_list chan father max
 
 (*Expression*)
 let print_log_operator = fun op chan father max ->
@@ -55,13 +65,25 @@ match op with
 |Neq -> my_print "!="
 |In -> my_print "In"
 
+let print_sign = s chan father max ->
+let my_print = fun a  -> print_init a chan father max
+in
+match s with
+|Plus -> my_print "+"
+|Minus -> my_print "-"
+
 let print_simple_expr = fun expr chan father max ->
 match expr with
 |Signed (signe, t, sign_term_list) -> 	let position = print_init "SIGNED" chan father max
 					in let position1 = print_sign signe chan position position
 					in let position2 = print_term t chan position position1
 					in print_sign_term_list sign_term_list chan position position2
-|(*j'en suis là!!!!*)
+|USigned (t, sign_term_list) -> 	let position = print_init "UNSIGNED" chan father max
+					in let position1 = print_term t chan position position
+					in print_sign_term_list sign_term_list chan position position1
+
+and print_sign_term_list = print_lister "SIGN_TERM_LIST" print_sing_term
+
 let print_expr = fun exp chan father max ->
 match exp with
 |ESimple s -> print_simple_expr s chan father max
