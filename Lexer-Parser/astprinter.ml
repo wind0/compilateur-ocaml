@@ -24,7 +24,7 @@ let print_init1 = fun a b c -> print_init a b c c
 let rec print_list = fun elem_list chan father max func ->
 match elem_list with
 |[] -> max
-|[h::t] -> let position = func h chan father max in print_list t chan father position func
+|h::t -> let position = func h chan father max in print_list t chan father position func
 
 let print_lister = fun name func elem_list chan father max ->
 let position = print_init name chan father max
@@ -43,7 +43,7 @@ match typ with
 
 let print_uconst = fun uc chan father max ->
 match uc with
-|UInteger i -> print_init (sprintf "%li") chan father max
+|UInteger i -> print_init (sprintf "%li" i) chan father max
 |UString s -> print_init s chan father max
 
 let print_uconst_nil = fun u chan father max ->
@@ -86,7 +86,7 @@ match op with
 and print_op_term_fact = fun (op, f) chan father max ->
 let position = print_init "OP_TERM_FACT" chan father max
 in let position1 = print_op_term op chan position position
-in print_fact f chan position position1
+in print_factor f chan position position1
 
 (*Expression*)
 and print_log_operator = fun op chan father max ->
@@ -118,7 +118,7 @@ match expr with
 					in let position1 = print_term t chan position position
 					in print_sign_term_list sign_term_list chan position position1
 
-and print_sign_term_list = print_lister "SIGN_TERM_LIST" print_sing_term
+and print_sign_term_list = print_lister "SIGN_TERM_LIST" print_sign_term
 
 and print_sign_term = fun (sign, term) chan father max ->
 let position = print_init "SIGN_TERM" chan father max
@@ -136,7 +136,7 @@ and print_expr_list = print_lister "EXPR_LIST" print_expr
 and print_simple_type = fun st chan father max ->
 match st with
 |Type_identifier t-> print_typ t chan father max
-|ID_list id_list -> print_id_list chan father max
+|ID_list id_list -> print_id_list id_list chan father max
 |Enum (c1,c2) -> let position = print_init "Enum" chan father max
 		in let position1 = print_constant c1 chan position position
 		in print_constant c2 chan position position1
@@ -220,7 +220,7 @@ in match stat with
 |Wut (id, exp_id_list) -> 	let position1 = print_init1 "Procedure init" chan position 
 				in let position2 = print_id id chan position1 position1
 				in print_expr_id_list exp_id_list chan position1 position2
-|Embedded(statement_list) ->	print_statement_list statement_list chan position1 position1
+|Embedded(statement_list) ->	print_statement_list statement_list chan position position
 |IfThen(exp, stat) -> 	let position1 = print_init1 "If Then" chan position 
 			in let position2 = print_expr exp chan position1 position1
 			in truc stat chan position1 position2
@@ -286,7 +286,8 @@ and print_block_const = print_lister "init_cont list" print_init_const
 and print_parameter = let rec truc = fun typ chan father max ->
 let position = print_init "PARAMETER" chan father max
 in 
-match typ with
+(match typ with 
+
 |NoneParameter -> print_init "NoneParameter" chan father position
 |ClassicParameter(identifier_list, typ, parameter) -> 
 let position1 = print_init "ClassicParameter" chan father position
@@ -310,14 +311,19 @@ in truc parameter chan position1 position3
 let position1 = print_init "ProcedureParameter" chan father position
 in let position2 = print_id_list identifier_list chan position1 position1
 in truc parameter chan position1 position2
+)
 in truc
 
-and print_block_type = print_lister "BLOC_TYPE" print init_type
 
 and print_init_type = fun (id, typ_auto) chan father max ->
 let position = print_init "INIT_TYPE" chan father max
 in let position1 = print_id id chan position position
 in print_typ_auto typ_auto chan position position1
+
+and print_block_type = print_lister "BLOC_TYPE" print_init_type 
+
+
+
 
 (*Procedures*)
 and print_procedure = fun proc chan father max ->
