@@ -24,14 +24,49 @@ match elem_list with
 |[] -> max
 |[h::t] -> let position = func h chan father max in print_list t chan father position func
 
-let print_lister = fun name elem_list chan father max func ->
+let print_lister = fun name func elem_list chan father max ->
 let position = print_init name chan father max
 in print_list elem_list chan father max func
 
 (*----------------Let us start-----------------*)
-
+(*TODO:
+	print_block_const
+	print_block_var
+	print_block_types
+	print_expr
+	print_expr_id_list
+	print_case_list
+	print_simple_expr	
+*)
 (*print un id*)
 let print_id = print_init (*mais chuuuut*)
+
+(*Expression*)
+let print_log_operator = fun op chan father max ->
+let my_print = fun a -> print_init a chan father max
+in
+match op with
+|Lt -> my_print "<"
+|Le -> my_print "<="
+|Gt -> my_print ">"
+|Ge -> my_print ">="
+|Eq -> my_print "=="
+|Neq -> my_print "!="
+|In -> my_print "In"
+
+let print_simple_expr = fun expr chan father max ->
+match expr with
+|Signed (signe, t, sign_term_list) -> 	let position = print_init "SIGNED" chan father max
+					in let position1 = print_sign signe chan position position
+					in let position2 = print_term t chan position position1
+					in print_sign_term_list sign_term_list chan position position1
+|(*j'en suis là!!!!*)
+let print_expr = fun exp chan father max ->
+match exp with
+|ESimple s -> print_simple_expr s chan father max
+|EOperation (e1 , o, e2) -> 	let position = print_log_operator o chan father max 
+				in let position1 = print_simple_expr e1 chan position position 
+				in print_simple_expr e2 chan position position1
 
 (*LES STATEMENT*)
 let print_statement = fun stat chan father max ->
@@ -66,12 +101,13 @@ in match stat with
 						in let position4 = print_inc_or_decr inc_or_decr chan position1 position3
 						in let position5 = print_expr exp2 chan position1 position4
 						in print_statement stat chan position1 position5
-and print_statement_list = print_lister "Statement list"
+and print_statement_list = print_lister "Statement list" print_statement
 
 and print_var_or_id = fun a chan father max ->
 match a with
 |Variable var -> print_var var chan father max
 |Id2 id -> print_id id chan father max
+
 (*print procedures*)
 and print_procedure = fun proc chan father max ->
 let position = print_init "PROCEDURE" chan father max
@@ -79,7 +115,7 @@ in let position1 = print_id proc.proc_name chan position position
 in let position2 = print_parameter proc.proc_parameter chan position position1
 in print_block proc.proc_body chan position
 
-and print_procedure_list = print_lister "FUNCTION_LIST"
+and print_procedure_list = print_lister "PROCEDURE_LIST" print_procedure
 
 (*FUCKING FUNCTIONS*)
 and print_function = fun func chan father max ->
@@ -89,7 +125,7 @@ in let position2 = print_parameter func.func_parameter chan position position1
 in let position3 = print_typ func.func_return_type chan position position2
 in print_block func.func_body chan position 
 
-and print_function_list = print_lister "FUNCTION_LIST"
+and print_function_list = print_lister "FUNCTION_LIST" print_function
 
 (*print block*)
 and print_block = fun block chan father max ->
