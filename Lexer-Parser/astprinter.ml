@@ -51,8 +51,39 @@ match u with
 |UNormal uc -> print_uconst uc chan father max
 |Nil -> print_init "NIL" chan father max
 
+(*FUCK*)
+let rec print_parameter = fun typ chan father max ->
+let position = print_init "PARAMETER" chan father max
+in
+match typ with
+|NoneParameter -> print_init "NoneParameter" chan father position
+|ClassicParameter(identifier_list, typ, parameter) ->
+let position1 = print_init "ClassicParameter" chan father position
+in let position2 = print_typ typ chan position1 position1
+in let position3 = print_id_list identifier_list chan position1 position2
+in print_parameter parameter chan position1 position3
+
+|FunctionParameter(identifier_list, typ, parameter) ->
+let position1 = print_init "FunctionParameter" chan father position
+in let position2 = print_typ typ chan position1 position1
+in let position3 = print_id_list identifier_list chan position1 position2
+in print_parameter parameter chan position1 position3
+
+|VariableParameter(identifier_list, typ, parameter) ->
+let position1 = print_init "VariableParameter" chan father position
+in let position2 = print_typ typ chan position1 position1
+in let position3 = print_id_list identifier_list chan position1 position2
+in print_parameter parameter chan position1 position3
+
+|ProcedureParameter(identifier_list, parameter) ->
+let position1 = print_init "ProcedureParameter" chan father position
+in let position2 = print_id_list identifier_list chan position1 position1
+in print_parameter parameter chan position1 position2
+
+
+
 (*Termes*)
-let rec print_factor = fun fact chan father max ->
+and print_factor = let rec truc = fun fact chan father max ->
 let position = print_init "FACTOR" chan father max
 in
 match fact with
@@ -63,15 +94,15 @@ match fact with
 			in print_expr_list exp_list chan position1 position2
 |Expression exp -> print_expr exp chan position position
 |Neg_factor f -> let position1 = print_init1 "NOT" chan position
-		in print_factor f chan position1 position1
+		in truc f chan position1 position1
 |Brackets exp_list -> let position1 = print_init1 "Brackets" chan position
 			in print_expr_list exp_list chan position1 position1
+in truc
 
 and print_term = fun (fac, op_fact_list) chan father max ->
 let position = print_init "TERM" chan father max
 in let position2 = print_factor fac chan position position
 in print_op_term_fact_list op_fact_list chan father max
-
 and print_op_term_fact_list = print_lister "OP_TERM_FACT_LIST" print_op_term_fact
 
 and print_op_term = fun op chan father max ->
@@ -283,36 +314,7 @@ and print_block_const = print_lister "init_cont list" print_init_const
 
 (*Parameters*)
 
-and print_parameter = let rec truc = fun typ chan father max ->
-let position = print_init "PARAMETER" chan father max
-in 
-(match typ with 
 
-|NoneParameter -> print_init "NoneParameter" chan father position
-|ClassicParameter(identifier_list, typ, parameter) -> 
-let position1 = print_init "ClassicParameter" chan father position
-in let position2 = print_typ typ chan position1 position1
-in let position3 = print_id_list identifier_list chan position1 position2
-in truc parameter chan position1 position3
-
-|FunctionParameter(identifier_list, typ, parameter) -> 
-let position1 = print_init "FunctionParameter" chan father position
-in let position2 = print_typ typ chan position1 position1
-in let position3 = print_id_list identifier_list chan position1 position2
-in truc parameter chan position1 position3
-
-|VariableParameter(identifier_list, typ, parameter) -> 
-let position1 = print_init "VariableParameter" chan father position
-in let position2 = print_typ typ chan position1 position1
-in let position3 = print_id_list identifier_list chan position1 position2
-in truc parameter chan position1 position3
-
-|ProcedureParameter(identifier_list, parameter) -> 
-let position1 = print_init "ProcedureParameter" chan father position
-in let position2 = print_id_list identifier_list chan position1 position1
-in truc parameter chan position1 position2
-)
-in truc
 
 
 and print_init_type = fun (id, typ_auto) chan father max ->
@@ -320,19 +322,38 @@ let position = print_init "INIT_TYPE" chan father max
 in let position1 = print_id id chan position position
 in print_typ_auto typ_auto chan position position1
 
-and print_block_type = print_lister "BLOC_TYPE" print_init_type 
+and print_block_type = print_lister "BLOC_TYPE" (fun (id, typ_auto) chan father max ->
+let position = print_init "INIT_TYPE" chan father max
+in let position1 = print_id id chan position position
+in print_typ_auto typ_auto chan position position1)
 
 
+
+
+(*print block*)
+and print_block = fun block chan father max ->
+let me = print_init "BLOCK" chan father max
+in let position2 = print_block_const block.constants chan me me
+in let position3 = print_block_types block.types chan me position2
+in let position4 = print_block_var block.variables chan me position3
+in let position5 = print_procedure_list block.procedures chan me position4
+in let position6 = print_function_list block.functions chan me position5
+in print_statement_list block.statements chan me position6
 
 
 (*Procedures*)
+(*A DEBUG PLOX*)
 and print_procedure = fun proc chan father max ->
 let position = print_init "PROCEDURE" chan father max
 in let position1 = print_id proc.proc_name chan position position
-in let position2 = print_parameter proc.proc_parameter chan position position1
+in let position2 = print_parameter proc.proc_parameters chan position position1
 in print_block proc.proc_body chan position
 
-and print_procedure_list = print_lister "PROCEDURE_LIST" print_procedure
+and print_procedure_list = print_lister "PROCEDURE_LIST" (fun proc chan father max ->
+let position = print_init "PROCEDURE" chan father max
+in let position1 = print_id proc.proc_name chan position position
+in let position2 = print_parameter proc.proc_parameters chan position position1
+in print_block proc.proc_body chan position)
 
 (*FUCKING FUNCTIONS*)
 and print_function = fun func chan father max ->
@@ -342,17 +363,12 @@ in let position2 = print_parameter func.func_parameter chan position position1
 in let position3 = print_typ func.func_return_type chan position position2
 in print_block func.func_body chan position 
 
-and print_function_list = print_lister "FUNCTION_LIST" print_function
-
-(*print block*)
-and print_block = fun block chan father max ->
-let me = print_init "BLOCK" chan father max
-in position2 = print_block_const block.constants chan me me
-in let position3 = print_block_types block.types chan me position2
-in let position4 = print_block_var block.variables chan me position3
-in let position5 = print_procedure_list block.procedures chan me position4
-in let position6 = print_function_list block.functions chan me position5
-in print_statement_list block.statements chan me position6
+and print_function_list = print_lister "FUNCTION_LIST" (fun func chan father max ->
+let position = print_init "FUNCTION" chan father max
+in let position1 = print_id func.func_name chan position position
+in let position2 = print_parameter func.func_parameter chan position position1
+in let position3 = print_typ func.func_return_type chan position position2
+in print_block func.func_body chan position )
 
 (*principal*)
 and print = 
