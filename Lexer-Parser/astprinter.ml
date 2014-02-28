@@ -36,7 +36,8 @@ in print_list elem_list chan father max func
 	print_expr
 	print_expr_id_list
 	print_case_list
-	print_simple_expr	
+	print_term
+	print_sign_term_list
 *)
 (*print un id*)
 let print_id = print_init (*mais chuuuut*)
@@ -59,7 +60,7 @@ match expr with
 |Signed (signe, t, sign_term_list) -> 	let position = print_init "SIGNED" chan father max
 					in let position1 = print_sign signe chan position position
 					in let position2 = print_term t chan position position1
-					in print_sign_term_list sign_term_list chan position position1
+					in print_sign_term_list sign_term_list chan position position2
 |(*j'en suis là!!!!*)
 let print_expr = fun exp chan father max ->
 match exp with
