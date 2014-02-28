@@ -60,8 +60,8 @@ FOR : "for"
 TO : "to"
 DOWNTO : "downto"
 INTC : integer
-STRINGC : "'"([^''']* as s)"'"
-VARID : varid as v
+STRINGC : "'"([^''']*)"'"
+VARID : varid
 ID : identifier
 
 
