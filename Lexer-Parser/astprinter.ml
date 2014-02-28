@@ -137,14 +137,44 @@ match exp with
 				in print_simple_expr e2 chan position position1
 and print_expr_list = print_lister "EXPR_LIST" print_expr
 (*Type automate*)
+and print_simple_type = fun st chan father max ->
+match st with
+|Type_identifier t-> print_typ t chan father max
+|ID_list id_list -> print_id_list chan father max
+|Enum (c1,c2) -> let position = print_init "Enum" chan father max
+		in let position1 = print_constant c1 chan position position
+		in print_constant c2 chan position position1
+
+and print_simple_type_list = print_lister "SIMPLE_TYPE_LIST" print_simple_type
+
+and rec print_field_list = fun fl chan father max ->
+match fl with
+|Recur (id_list,typ_auto) -> let position =  print_id_list id_list chan father max in print_typ_auto typ_auto chan father position
+|RecurPlus (id_list, typ_auto, fl) -> let position = print_id_list id_list chan father max
+					in let position1 = print_typ_auto typ_auto chan father position
+					in print_field_list fl chan father position1
+|FCase (id, t, line_case_field_list) -> let position = print_id id chan father max
+					in let position1 = print_typ t chan father position
+					in print_line_case_field_list line_case_field_list chan father position
+
+and print_line_case_field_list = print_lister "LINE_CASE_FIELD_LIST" print_line_case
+
+and print_line_case = fun (c_list, fl) chan father max->
+let position = print_init "LINE_CASE" chan father max
+in let position2 = print_constant_list c_list chan position position
+in print_field_list fl chan father max
+ 
 
 and print_typ_auto = fun t chan father max ->
 match t with
 |Simple ty -> print_simple_type ty chan father max
 |Array a -> print_array_type_auto a chan father max
-|Record r -> print_record r chan father max
+|Record r -> print_field_list r chan father max
 
-and print_array_type_auto = fun (*j'en suis là!!!!*)
+and print_array_type_auto = fun (st_list, typ_auto) chan father max->
+let position = print_init "ARRAY_TYPE_AUTO" chan father max
+in let position1 = print_simple_type_list st_list chan position position
+in print_typ_auto typ_auto chan position position1
 
 (*Variables*)
 and print_var = fun (id,biv_list) chan father max->
@@ -167,6 +197,23 @@ in print_typ_auto typ_auto chan position position1
 and print_block_var = print_lister "INIT_VAR LIST" print_init_var
 
 (*LES STATEMENT*)
+
+and print_expr_id_list = print_lister "EXP_OR_PROCID_LIST" print_expr_or_procid
+
+and print_expr_or_procid = fun eop chan father max ->
+match eop with
+|Id id -> print_id id chan father max
+|Expr exp -> print_expr exp chan father max
+
+and print_case_list = print_lister "SINGLE_CASE_LIST" print_case
+
+and print_case = fun (c_list, stat) chan father max ->
+let position = print_init "SINGLE_CASE" chan father max
+in let position1 = print_constant_list c_list chan position position
+in print_statement stat chan position position1
+
+
+
 and rec print_statement = fun stat chan father max ->
 let position = print_init "STATEMENT" chan father max
 in match stat with
@@ -226,6 +273,8 @@ match c with
 |CString s -> let position = print_init "STRING" chan father max
 		in print_init1 s chan position
 
+and print_constant_list = print_lister "CONST_LIST" print_constant
+
 and print_init_const = fun (identifier, constante) chan father max->
 let position = print_init "INIT CONST" chan father max
 in let position1 = print_id identifier chan father position
@@ -262,6 +311,13 @@ let position1 = print_init "ProcedureParameter" chan father position
 in let position2 = print_id_list identifier_list chan position1 position1
 in print_parameter parameter chan position1 position2
 
+
+and print_block_type = print_lister "BLOC_TYPE" print init_type
+
+and print_init_type = fun (id, typ_auto) chan father max ->
+let position = print_init "INIT_TYPE" chan father max
+in let position1 = print_id id chan position position
+in print_typ_auto typ_auto chan position position1
 
 (*Procedures*)
 and print_procedure = fun proc chan father max ->
