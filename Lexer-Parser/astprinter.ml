@@ -74,7 +74,7 @@ match a with
 |To -> print_init "TO" chan father max
 |Downto -> print_init "DOWNTO" chan father max
 
-let print_block_const = print_lister "init_cont list" print_block_const
+let print_block_const = print_lister "init_cont list" print_block
 
 
 (*LES STATEMENT*)
