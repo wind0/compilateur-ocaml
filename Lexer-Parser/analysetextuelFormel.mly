@@ -1,4 +1,70 @@
 
+digit = ['0'-'9']
+lowerletter = ['a'-'z']
+letter = ['A'-'Z' 'a'-'z']
+varid = lowerletter (letter | digit)*
+identifier = letter (letter | digit)*
+integer = digit+
+newline = ('\010'|'\013'|"\013\010")
+ws = [' ' '\t']
+string = [^'''] (letter | digit | newline | ws)*
+
+PROGRAM : "program"  
+BEGIN : "begin"
+END : "end"
+SEMICOLON : ";" 
+DOTLPAR : ".(" 
+DOT : "." 
+RECORD : "record"
+ARRAY : "array"
+INTEGER : "integer"
+BOOLEAN : "boolean"
+NIL : "nil"
+PLUS : "+" 
+MINUS : "-" 
+MULT : "*" 
+DIV : "/" 
+MOD : "mod"
+PUIS : "^" 
+COMA  : ","
+COLON : ":" 
+LPAR : "(" 
+RPAR  : ")"
+DOUBLEDOT : ".."
+LBR : "[" 
+RBR  : "]"
+EQ : "=" 
+NOTEQ : "!="
+LT : "<"
+GT : ">"
+LE:  "<=" 
+GE:  ">=" 
+IN : "in"
+NOT:  "!" 
+COLONEQ:  ":=" 
+VAR : "var"
+CONST : "const"
+TYPE : "type"
+PROCEDURE : "procedure"
+FUNCTION : "function"
+IF : "if"
+THEN : "then"
+ELSE : "else"
+CASE : "case"
+OF : "of"
+WHILE : "while"
+DO : "do"
+REPEAT : "repeat"
+UNTIL : "until"
+FOR : "for"
+TO : "to"
+DOWNTO : "downto"
+INTC : integer
+STRINGC : "'"([^''']* as s)"'"
+VARID : varid as v
+ID : identifier
+
+
 %%
 (* automate : unsigned constant  *)
 
