@@ -30,24 +30,30 @@ in print_list elem_list chan father max func
 
 (*----------------Let us start-----------------*)
 (*TODO:
-	print_block_const
 	print_block_var
 	print_block_types
-	print_var
 	print_expr_id_list
 	print_case_list
 *)
 (*print un id*)
 let print_id = print_init (*mais chuuuut*)
 
-(*Const*)
+let print_id_list = print_lister "ID LIST" print_id
 
-let print_block_const = print_lister "init_cont list" print_init_const
+let print_typ = fun typ chan father max ->
+match typ with
+|TypInteger -> print_init "TypInteger" chan father max
+|TypBoolean -> print_init "TypBoolean" chan father max
 
-let print_init_const = fun (identifier, constante) chan father max->
-let position = print_init "INIT CONST" chan father max
-let position1 = print_id identifier chan father position
-in let position2 = print_constante constante chan position position1
+let print_uconst = fun uc chan father max ->
+match uc with
+|UInteger i -> print_init (sprintf "%li") chan father max
+|UString s -> print_init s chan father max
+
+let print_uconst_nil = fun u chan father max ->
+match u with 
+|UNormal uc -> print_uconst uc chan father max
+|Nil -> print_init "NIL" chan father max
 
 (*Termes*)
 let rec print_factor = fun fact chan father max ->
@@ -131,15 +137,28 @@ match exp with
 				in print_simple_expr e2 chan position position1
 and print_expr_list = print_lister "EXPR_LIST" print_expr
 
-let print_inc_or_decr = fun a chan father max ->
-match a with
-|To -> print_init "TO" chan father max
-|Downto -> print_init "DOWNTO" chan father max
+(*Variables*)
+and print_var = fun (id,biv_list) chan father max->
+let position = print_init "VARIABLE" chan father max
+in let position1 = print_id id chan father max
+in print_biv_list biv_list chan father max
 
+and print_biv_list = print_lister "BOUCLE_INTERNE_VARIABLE_LIST" print_biv
 
+and print_biv = fun biv chan father max -> 
+match biv with
+|Brackety exp_list -> let position = print_init "BRACKETS" chan father max in print_expr_list exp_list chan position position
+|Dotty id -> let position = print_init "DOT" chan father max in print_id id chan position position
+
+let print_init_var = fun (id_list,typ_auto) chan father max ->
+let position = print_init "INIT_VAR" chan father max
+in let position1 = print_id_list id_list chan position position ->
+in print_typ_auto typ_auto chan position position1
+
+let print_block_var = print_lister "INIT_VAR LIST" print_init_var
 
 (*LES STATEMENT*)
-let print_statement = fun stat chan father max ->
+let rec print_statement = fun stat chan father max ->
 let position = print_init "STATEMENT" chan father max
 in match stat with
 |Affect (var, exp) -> 	let position1 = print_init1 ":=" chan position 
@@ -178,7 +197,34 @@ match a with
 |Variable var -> print_var var chan father max
 |Id2 id -> print_id id chan father max
 
-(*print procedures*)
+and print_inc_or_decr = fun a chan father max ->
+match a with
+|To -> print_init "TO" chan father max
+|Downto -> print_init "DOWNTO" chan father max
+(*Const*)
+
+let print_burne = fun b chan father max->
+match b with
+|BIdentified id -> print_id id chan father max
+|BInteger i -> print_id (sprintf "%li" i) chan father max
+
+let print_constant = fun c chan father max->
+match c with
+|SignedBurne (s,b) -> let position = print_init "SIGNED_CONSTANT" chan father max 
+			in let position1 = print_sign s chan position position
+			in print_burne b chan position position1
+|Burne b -> print_burne b chan father max
+|CString s -> let position = print_init "STRING" chan father max
+		in print_init1 s chan position
+
+let print_init_const = fun (identifier, constante) chan father max->
+let position = print_init "INIT CONST" chan father max
+let position1 = print_id identifier chan father position
+in let position2 = print_constant constante chan position position1
+
+let print_block_const = print_lister "init_cont list" print_init_const
+
+(*Procedures*)
 and print_procedure = fun proc chan father max ->
 let position = print_init "PROCEDURE" chan father max
 in let position1 = print_id proc.proc_name chan position position
