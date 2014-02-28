@@ -136,6 +136,15 @@ match exp with
 				in let position1 = print_simple_expr e1 chan position position 
 				in print_simple_expr e2 chan position position1
 and print_expr_list = print_lister "EXPR_LIST" print_expr
+(*Type automate*)
+
+and print_typ_auto = fun t chan father max ->
+match t with
+|Simple ty -> print_simple_type ty chan father max
+|Array a -> print_array_type_auto a chan father max
+|Record r -> print_record r chan father max
+
+and print_array_type_auto = fun (*j'en suis là!!!!*)
 
 (*Variables*)
 and print_var = fun (id,biv_list) chan father max->
@@ -150,15 +159,15 @@ match biv with
 |Brackety exp_list -> let position = print_init "BRACKETS" chan father max in print_expr_list exp_list chan position position
 |Dotty id -> let position = print_init "DOT" chan father max in print_id id chan position position
 
-let print_init_var = fun (id_list,typ_auto) chan father max ->
+and print_init_var = fun (id_list,typ_auto) chan father max ->
 let position = print_init "INIT_VAR" chan father max
 in let position1 = print_id_list id_list chan position position ->
 in print_typ_auto typ_auto chan position position1
 
-let print_block_var = print_lister "INIT_VAR LIST" print_init_var
+and print_block_var = print_lister "INIT_VAR LIST" print_init_var
 
 (*LES STATEMENT*)
-let rec print_statement = fun stat chan father max ->
+and rec print_statement = fun stat chan father max ->
 let position = print_init "STATEMENT" chan father max
 in match stat with
 |Affect (var, exp) -> 	let position1 = print_init1 ":=" chan position 
@@ -203,12 +212,12 @@ match a with
 |Downto -> print_init "DOWNTO" chan father max
 (*Const*)
 
-let print_burne = fun b chan father max->
+and print_burne = fun b chan father max->
 match b with
 |BIdentified id -> print_id id chan father max
 |BInteger i -> print_id (sprintf "%li" i) chan father max
 
-let print_constant = fun c chan father max->
+and print_constant = fun c chan father max->
 match c with
 |SignedBurne (s,b) -> let position = print_init "SIGNED_CONSTANT" chan father max 
 			in let position1 = print_sign s chan position position
@@ -217,12 +226,42 @@ match c with
 |CString s -> let position = print_init "STRING" chan father max
 		in print_init1 s chan position
 
-let print_init_const = fun (identifier, constante) chan father max->
+and print_init_const = fun (identifier, constante) chan father max->
 let position = print_init "INIT CONST" chan father max
-let position1 = print_id identifier chan father position
+in let position1 = print_id identifier chan father position
 in let position2 = print_constant constante chan position position1
 
-let print_block_const = print_lister "init_cont list" print_init_const
+and print_block_const = print_lister "init_cont list" print_init_const
+
+(*Parameters*)
+
+let rec print_parameter = fun typ chan father max ->
+let position = print_init "PARAMETER" chan father max
+match typ with
+|NoneParameter -> print_init "NoneParameter" chan father position
+|ClassicParameter(identifier_list, typ, parameter) -> 
+let position1 = print_init "ClassicParameter" chan father position
+in let position2 = print_typ typ chan position1 position1
+in let position3 = print_id_list identifier_list chan position1 position2
+in print_parameter parameter chan position1 position3
+
+|FunctionParameter(identifier_list, typ, parameter) -> 
+let position1 = print_init "FunctionParameter" chan father position
+in let position2 = print_typ typ chan position1 position1
+in let position3 = print_id_list identifier_list chan position1 position2
+in print_parameter parameter chan position1 position3
+
+|VariableParameter(identifier_list, typ, parameter) -> 
+let position1 = print_init "VariableParameter" chan father position
+in let position2 = print_typ typ chan position1 position1
+in let position3 = print_id_list identifier_list chan position1 position2
+in print_parameter parameter chan position1 position3
+
+|ProcedureParameter(identifier_list, parameter) -> 
+let position1 = print_init "ProcedureParameter" chan father position
+in let position2 = print_id_list identifier_list chan position1 position1
+in print_parameter parameter chan position1 position2
+
 
 (*Procedures*)
 and print_procedure = fun proc chan father max ->
