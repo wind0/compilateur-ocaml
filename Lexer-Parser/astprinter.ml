@@ -33,27 +33,61 @@ in print_list elem_list chan father max func
 	print_block_const
 	print_block_var
 	print_block_types
-	print_expr
+	print_var
 	print_expr_id_list
 	print_case_list
-	print_sign_term
-	print_factor
-	print_op_term_fact
-	print_op_term_fact_list
 *)
 (*print un id*)
 let print_id = print_init (*mais chuuuut*)
 
-(*Termes*)
-let print_factor = fun (*j'en suis là*)
+(*Const*)
 
-let print_term = fun (fac, op_fact_list) chan father max ->
+let print_block_const = print_lister "init_cont list" print_init_const
+
+let print_init_const = fun (identifier, constante) chan father max->
+let position = print_init "INIT CONST" chan father max
+let position1 = print_id identifier chan father position
+in let position2 = print_constante constante chan position position1
+
+(*Termes*)
+let rec print_factor = fun fact chan father max ->
+let position = print_init "FACTOR" chan father max
+in
+match fact with
+|UConst u -> print_uconst_nil u chan position position
+|Var v -> print_var v chan position position
+|Function (i, exp_list) -> let position1 = print_init1 "FUNCTION" chan position
+			in let position2 = print_id i chan position1 position1
+			in print_expr_list exp_list chan position1 position2
+|Expression exp -> print_expr exp chan position position
+|Neg_factor f -> let position1 = print_init1 "NOT" chan position
+		in print_factor f chan position1 position1
+|Brackets exp_list -> let position1 = print_init1 "Brackets" chan position
+			in print_expr_list exp_list chan position1 position1
+
+and print_term = fun (fac, op_fact_list) chan father max ->
 let position = print_init "TERM" chan father max
 in let position2 = print_factor fac chan position position
 in print_op_term_fact_list op_fact_list chan father max
 
+and print_op_term_fact_list = print_lister "OP_TERM_FACT_LIST" print_op_term_fact
+
+and print_op_term = fun op chan father max ->
+let my_print = fun a -> print_init a chan father max
+in
+match op with
+|Times -> my_print "*"
+|Div -> my_print "/"
+|Mod -> my_print "%"
+|Pow -> my_print "^"
+
+and print_op_term_fact = fun (op, f) chan father max ->
+let position = print_init "OP_TERM_FACT" chan father max
+in let position1 = print_op_term op chan position position
+in print_fact f chan position position1
+
 (*Expression*)
-let print_log_operator = fun op chan father max ->
+and print_log_operator = fun op chan father max ->
 let my_print = fun a -> print_init a chan father max
 in
 match op with
@@ -65,14 +99,14 @@ match op with
 |Neq -> my_print "!="
 |In -> my_print "In"
 
-let print_sign = s chan father max ->
+and print_sign = s chan father max ->
 let my_print = fun a  -> print_init a chan father max
 in
 match s with
 |Plus -> my_print "+"
 |Minus -> my_print "-"
 
-let print_simple_expr = fun expr chan father max ->
+and print_simple_expr = fun expr chan father max ->
 match expr with
 |Signed (signe, t, sign_term_list) -> 	let position = print_init "SIGNED" chan father max
 					in let position1 = print_sign signe chan position position
@@ -84,20 +118,24 @@ match expr with
 
 and print_sign_term_list = print_lister "SIGN_TERM_LIST" print_sing_term
 
-let print_expr = fun exp chan father max ->
+and print_sign_term = fun (sign, term) chan father max ->
+let position = print_init "SIGN_TERM" chan father max
+in let position1 = print_sign sign chan position position
+in print_term term chan position position1
+
+and print_expr = fun exp chan father max ->
 match exp with
 |ESimple s -> print_simple_expr s chan father max
 |EOperation (e1 , o, e2) -> 	let position = print_log_operator o chan father max 
 				in let position1 = print_simple_expr e1 chan position position 
 				in print_simple_expr e2 chan position position1
-
+and print_expr_list = print_lister "EXPR_LIST" print_expr
 
 let print_inc_or_decr = fun a chan father max ->
 match a with
 |To -> print_init "TO" chan father max
 |Downto -> print_init "DOWNTO" chan father max
 
-let print_block_const = print_lister "init_cont list" print_init_const
 
 
 (*LES STATEMENT*)
