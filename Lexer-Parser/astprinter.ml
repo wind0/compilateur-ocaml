@@ -1,3 +1,5 @@
+
+
 open Printf
 open AST
 
@@ -29,12 +31,6 @@ let position = print_init name chan father max
 in print_list elem_list chan father max func
 
 (*----------------Let us start-----------------*)
-(*TODO:
-	print_block_var
-	print_block_types
-	print_expr_id_list
-	print_case_list
-*)
 (*print un id*)
 let print_id = print_init (*mais chuuuut*)
 
@@ -105,7 +101,7 @@ match op with
 |Neq -> my_print "!="
 |In -> my_print "In"
 
-and print_sign = s chan father max ->
+and print_sign = fun s chan father max ->
 let my_print = fun a  -> print_init a chan father max
 in
 match s with
@@ -147,15 +143,16 @@ match st with
 
 and print_simple_type_list = print_lister "SIMPLE_TYPE_LIST" print_simple_type
 
-and rec print_field_list = fun fl chan father max ->
+and print_field_list = let rec truc  = fun fl chan father max ->
 match fl with
 |Recur (id_list,typ_auto) -> let position =  print_id_list id_list chan father max in print_typ_auto typ_auto chan father position
 |RecurPlus (id_list, typ_auto, fl) -> let position = print_id_list id_list chan father max
 					in let position1 = print_typ_auto typ_auto chan father position
-					in print_field_list fl chan father position1
+					in truc fl chan father position1
 |FCase (id, t, line_case_field_list) -> let position = print_id id chan father max
 					in let position1 = print_typ t chan father position
 					in print_line_case_field_list line_case_field_list chan father position
+in truc
 
 and print_line_case_field_list = print_lister "LINE_CASE_FIELD_LIST" print_line_case
 
@@ -191,7 +188,7 @@ match biv with
 
 and print_init_var = fun (id_list,typ_auto) chan father max ->
 let position = print_init "INIT_VAR" chan father max
-in let position1 = print_id_list id_list chan position position ->
+in let position1 = print_id_list id_list chan position position
 in print_typ_auto typ_auto chan position position1
 
 and print_block_var = print_lister "INIT_VAR LIST" print_init_var
@@ -214,29 +211,29 @@ in print_statement stat chan position position1
 
 
 
-and rec print_statement = fun stat chan father max ->
+and print_statement = let rec truc = fun stat chan father max ->
 let position = print_init "STATEMENT" chan father max
 in match stat with
 |Affect (var, exp) -> 	let position1 = print_init1 ":=" chan position 
 			in let position2 = print_var_or_id var chan position1 position1 
 			in print_expr exp chan position1 position2
-|Wut (id, exp_id_list) -> 	let position1 print_init1 "Procedure init" chan position 
+|Wut (id, exp_id_list) -> 	let position1 = print_init1 "Procedure init" chan position 
 				in let position2 = print_id id chan position1 position1
 				in print_expr_id_list exp_id_list chan position1 position2
 |Embedded(statement_list) ->	print_statement_list statement_list chan position1 position1
 |IfThen(exp, stat) -> 	let position1 = print_init1 "If Then" chan position 
 			in let position2 = print_expr exp chan position1 position1
-			in print_statement stat chan position1 position2
+			in truc stat chan position1 position2
 |IfThenElse(exp, stat, stat2) ->	let position1 = print_init1 "If Then Else" chan position
 					in let position2 = print_expr exp chan position1 position1
-					in let position3 = print_statement stat chan position1 position2
-					in print_statement stat2 chan position1 position3
+					in let position3 = truc stat chan position1 position2
+					in truc stat2 chan position1 position3
 |Case(exp, case_list) -> 	let position1 = print_init1 "Case" chan position 
 				in let position2 = print_expr exp chan position1 position1
 				in print_case_list case_list chan position1 position2
 |While(exp, stat)  -> 	let position1 = print_init1 "While" chan position 
 			in let position2 = print_expr exp chan position1 position1
-			in print_statement stat chan position1 position2
+			in truc stat chan position1 position2
 |Repeat(stat_list, exp) -> 	let position1 = print_init1 "Repeat Until" chan position 
 				in let position2 = print_statement_list stat_list chan position1 position1
 				in print_expr exp chan position1 position2
@@ -245,7 +242,9 @@ in match stat with
 						in let position3 = print_expr exp chan position1 position2
 						in let position4 = print_inc_or_decr inc_or_decr chan position1 position3
 						in let position5 = print_expr exp2 chan position1 position4
-						in print_statement stat chan position1 position5
+						in truc stat chan position1 position5
+in truc
+
 and print_statement_list = print_lister "Statement list" print_statement
 
 and print_var_or_id = fun a chan father max ->
@@ -280,37 +279,38 @@ let position = print_init "INIT CONST" chan father max
 in let position1 = print_id identifier chan father position
 in let position2 = print_constant constante chan position position1
 
-and print_block_const = print_lister "init_cont list" print_init_const
+and print_block_const = print_lister "init_cont list" print_init_const 
 
 (*Parameters*)
 
-let rec print_parameter = fun typ chan father max ->
+and print_parameter = let rec truc = fun typ chan father max ->
 let position = print_init "PARAMETER" chan father max
+in 
 match typ with
 |NoneParameter -> print_init "NoneParameter" chan father position
 |ClassicParameter(identifier_list, typ, parameter) -> 
 let position1 = print_init "ClassicParameter" chan father position
 in let position2 = print_typ typ chan position1 position1
 in let position3 = print_id_list identifier_list chan position1 position2
-in print_parameter parameter chan position1 position3
+in truc parameter chan position1 position3
 
 |FunctionParameter(identifier_list, typ, parameter) -> 
 let position1 = print_init "FunctionParameter" chan father position
 in let position2 = print_typ typ chan position1 position1
 in let position3 = print_id_list identifier_list chan position1 position2
-in print_parameter parameter chan position1 position3
+in truc parameter chan position1 position3
 
 |VariableParameter(identifier_list, typ, parameter) -> 
 let position1 = print_init "VariableParameter" chan father position
 in let position2 = print_typ typ chan position1 position1
 in let position3 = print_id_list identifier_list chan position1 position2
-in print_parameter parameter chan position1 position3
+in truc parameter chan position1 position3
 
 |ProcedureParameter(identifier_list, parameter) -> 
 let position1 = print_init "ProcedureParameter" chan father position
 in let position2 = print_id_list identifier_list chan position1 position1
-in print_parameter parameter chan position1 position2
-
+in truc parameter chan position1 position2
+in truc
 
 and print_block_type = print_lister "BLOC_TYPE" print init_type
 
@@ -348,13 +348,15 @@ in let position5 = print_procedure_list block.procedures chan me position4
 in let position6 = print_function_list block.functions chan me position5
 in print_statement_list block.statements chan me position6
 
- 
 (*principal*)
-let print = fun ast file ->
+and print = 
+fun ast file ->
 let chan = open_out file
-in let _ = fprintf chan "graph G {\n"
-and me = 1
-in let _ = print_label chan "PROGRAM" position
-and position2 = print_id ast.prog_name chan me me
-in print_block ast.prog_body chan me position2; fprintf chan "}"
-
+	in let _ = fprintf chan "graph G {\n"
+	and me = 1 
+		in let _ = print_label chan "PROGRAM" position
+		and position2 = print_id ast.prog_name chan me me
+			in let _  = print_block ast.prog_body chan me position2
+				and _ =  fprintf chan "}"
+				in close_out chan
+;
