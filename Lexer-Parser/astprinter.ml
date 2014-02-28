@@ -69,6 +69,15 @@ match exp with
 				in let position1 = print_simple_expr e1 chan position position 
 				in print_simple_expr e2 chan position position1
 
+
+let print_inc_or_decr = fun a chan father max ->
+match a with
+|To -> print_init "TO" chan father max
+|Downto -> print_init "DOWNTO" chan father max
+
+let print_block_const = print_lister "init_cont list" print_init_const
+
+
 (*LES STATEMENT*)
 let print_statement = fun stat chan father max ->
 let position = print_init "STATEMENT" chan father max
