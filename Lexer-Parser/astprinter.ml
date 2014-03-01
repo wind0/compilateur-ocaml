@@ -23,7 +23,7 @@ let print_init1 = fun a b c -> print_init a b c c
 (*print une liste d'elements grace à la fonction func*)
 let rec print_list = fun elem_list chan father max func ->
 match elem_list with
-|[] -> max 
+|[] -> max
 |h::t -> let position = func h chan father max in print_list t chan father position func
 
 let print_lister = fun name func elem_list chan father max ->
@@ -322,10 +322,11 @@ let position = print_init "INIT_TYPE" chan father max
 in let position1 = print_id id chan position position
 in print_typ_auto typ_auto chan position position1
 
-and print_block_types = print_lister "BLOC_TYPE" (fun (id, typ_auto) chan father max ->
+and print_block_type = print_lister "BLOC_TYPE" (fun (id, typ_auto) chan father max ->
 let position = print_init "INIT_TYPE" chan father max
 in let position1 = print_id id chan position position
 in print_typ_auto typ_auto chan position position1)
+
 
 
 
@@ -368,11 +369,10 @@ in let position1 = print_id func.func_name chan position position
 in let position2 = print_parameter func.func_parameter chan position position1
 in let position3 = print_typ func.func_return_type chan position position2
 in print_block func.func_body chan position )
-in plouf
 
 (*principal*)
-let print = 
-(fun ast file ->
+and print = 
+fun ast file ->
 let chan = open_out file
 	in let _ = fprintf chan "graph G {\n"
 	and me = 1 
@@ -380,4 +380,5 @@ let chan = open_out file
 		and position2 = print_id ast.prog_name chan me me
 			in let _  = print_block ast.prog_body chan me position2
 				and _ =  fprintf chan "}"
-				in close_out chan);;
+				in close_out chan
+;
