@@ -1,6 +1,7 @@
 set -e -u
 
 rm -f module/*.cmi module/*.cmo
+rm *.dot
 ocamlc AST.mli
 ocamlc -c error.ml
 ocamlc -c astprinter.ml

@@ -6,4 +6,4 @@ let lexbuf = Lexing.from_channel chan
 let magical_pamyu = ParserHELIX.program Lexer.token lexbuf
 
 
-let i_love_jelly_babies  = Astprinter.print magical_pamyu
+let i_love_jelly_babies  = Astprinter.print magical_pamyu "foulemoila.dot"

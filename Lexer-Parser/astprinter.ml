@@ -15,7 +15,8 @@ fprintf chan "%i -- %i;\n" a1 a2
 (*marre de réecrire ces deux lignes*)
 let print_init = fun name chan father max ->
 let position = max +1
-in print_label chan name position; print_edge chan position father; position
+and name1 = sprintf "\"%s\"" name
+in print_label chan name1 position; print_edge chan position father; position
 
 (*surcharge parce que j'en ai marre*)
 let print_init1 = fun a b c -> print_init a b c c
@@ -28,7 +29,7 @@ match elem_list with
 
 let print_lister = fun name func elem_list chan father max ->
 let position = print_init name chan father max
-in print_list elem_list chan father max func
+in print_list elem_list chan father position func
 
 (*----------------Let us start-----------------*)
 (*print un id*)
