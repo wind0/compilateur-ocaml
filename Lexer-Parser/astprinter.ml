@@ -52,7 +52,7 @@ match u with
 |Nil -> print_init "NIL" chan father max
 
 (*FUCK*)
-let rec print_parameter = (fun typ chan father max ->
+let rec print_parameter = fun typ chan father max ->
 let position = print_init "PARAMETER" chan father max
 in
 match typ with
@@ -79,7 +79,7 @@ in print_parameter parameter chan position1 position3
 let position1 = print_init "ProcedureParameter" chan father position
 in let position2 = print_id_list identifier_list chan position1 position1
 in print_parameter parameter chan position1 position2
-)
+
 
 
 (*Termes*)
@@ -322,7 +322,7 @@ let position = print_init "INIT_TYPE" chan father max
 in let position1 = print_id id chan position position
 in print_typ_auto typ_auto chan position position1
 
-and print_block_type = print_lister "BLOC_TYPE" (fun (id, typ_auto) chan father max ->
+and print_block_types = print_lister "BLOC_TYPE" (fun (id, typ_auto) chan father max ->
 let position = print_init "INIT_TYPE" chan father max
 in let position1 = print_id id chan position position
 in print_typ_auto typ_auto chan position position1)
