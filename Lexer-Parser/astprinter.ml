@@ -1,10 +1,8 @@
 
 open Printf
 open AST
-(*TODO:
-créer les groupes.
-print_parameter est complètement indépendante! foutez lui la paix!
-*)
+module Astprinter = 
+struct
 (*----------------utilities-------------*)
 (*print un label dot*)
 let print_label = fun chan name position ->
@@ -446,3 +444,5 @@ and position2 = print_id ast.prog_name chan me me
 in let _  = print_block ast.prog_body chan me position2
 and _ =  fprintf chan "}"
 in close_out chan
+
+end;;
