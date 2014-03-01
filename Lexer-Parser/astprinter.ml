@@ -303,82 +303,68 @@ match c with
 |CString s -> let position = print_init "STRING" chan father max
 		in print_init1 s chan position
 
-and print_constant_list = print_lister "CONST_LIST" print_constant
-
-and print_init_const = fun (identifier, constante) chan father max->
-let position = print_init "INIT CONST" chan father max
-in let position1 = print_id identifier chan father position
-in let position2 = print_constant constante chan position position1
-
-and print_block_const = print_lister "init_cont list" print_init_const 
-
-(*Parameters*)
-
-
-
+and print_block_type = print_lister "BLOCK_TYPE" print_init_type
 
 and print_init_type = fun (id, typ_auto) chan father max ->
 let position = print_init "INIT_TYPE" chan father max
 in let position1 = print_id id chan position position
-in print_typ_auto typ_auto chan position position1
-
-and print_block_type = print_lister "BLOC_TYPE" (fun (id, typ_auto) chan father max ->
-let position = print_init "INIT_TYPE" chan father max
-in let position1 = print_id id chan position position
-in print_typ_auto typ_auto chan position position1)
+in print_typ_auto typ_auto chan position position1		
 
 
+and print_constant_list = print_lister "CONST_LIST" print_constant
 
 
 (*print block*)
 and print_block = fun block chan father max ->
 let me = print_init "BLOCK" chan father max
 in let position2 = print_block_const block.constants chan me me
-in let position3 = print_block_types block.types chan me position2
+in let position3 = print_block_type block.types chan me position2
 in let position4 = print_block_var block.variables chan me position3
 in let position5 = print_procedure_list block.procedures chan me position4
 in let position6 = print_function_list block.functions chan me position5
-in print_statement_list block.statements chan me position6
+in print_statement_list block.statements chan me position4
 
 
 (*Procedures*)
 (*A DEBUG PLOX*)
-and print_procedure = fun proc chan father max ->
-let position = print_init "PROCEDURE" chan father max
-in let position1 = print_id proc.proc_name chan position position
-in let position2 = print_parameter proc.proc_parameters chan position position1
-in print_block proc.proc_body chan position
 
-and print_procedure_list = print_lister "PROCEDURE_LIST" (fun proc chan father max ->
-let position = print_init "PROCEDURE" chan father max
-in let position1 = print_id proc.proc_name chan position position
-in let position2 = print_parameter proc.proc_parameters chan position position1
-in print_block proc.proc_body chan position)
+and print_procedure_list = print_lister "PROCEDURE_LIST" print_procedure
 
-(*FUCKING FUNCTIONS*)
-and print_function = fun func chan father max ->
-let position = print_init "FUNCTION" chan father max
-in let position1 = print_id func.func_name chan position position
-in let position2 = print_parameter func.func_parameter chan position position1
-in let position3 = print_typ func.func_return_type chan position position2
-in print_block func.func_body chan position 
+  and print_procedure = fun proc chan father max ->
+  let position = print_init "PROCEDURE" chan father max
+  in let position1 = print_id proc.proc_name chan position position
+  in let position2 = print_parameter proc.proc_parameters chan position position1
+  in print_block proc.proc_body chan position position2
+  
+ 
+   and print_function_list = print_lister "FUNCTION_LIST" print_function 
+  
+  (*FUCKING FUNCTIONS*)
+  and print_function = fun func chan father max ->
+  let position = print_init "FUNCTION" chan father max
+  in let position1 = print_id func.func_name chan position position
+  in let position2 = print_parameter func.func_parameters chan position position1
+  in let position3 = print_typ func.func_return_type chan position position2
+  in print_block func.func_body chan position position3
+  
 
-and print_function_list = print_lister "FUNCTION_LIST" (fun func chan father max ->
-let position = print_init "FUNCTION" chan father max
-in let position1 = print_id func.func_name chan position position
-in let position2 = print_parameter func.func_parameter chan position position1
-in let position3 = print_typ func.func_return_type chan position position2
-in print_block func.func_body chan position )
+and print_block_const = print_lister "init_cont list" print_init_const 
+
+
+and print_init_const = fun (identifier, constante) chan father max ->
+let position = print_init "INIT CONST" chan father max
+in let position1 = print_id identifier chan father position
+in position1
+
+
 
 (*principal*)
-and print = 
-fun ast file ->
+and print = fun ast file ->
 let chan = open_out file
 	in let _ = fprintf chan "graph G {\n"
 	and me = 1 
-		in let _ = print_label chan "PROGRAM" position
+		in let _ = print_label chan "PROGRAM" me
 		and position2 = print_id ast.prog_name chan me me
 			in let _  = print_block ast.prog_body chan me position2
 				and _ =  fprintf chan "}"
 				in close_out chan
-;
