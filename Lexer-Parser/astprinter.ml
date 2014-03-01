@@ -1,8 +1,10 @@
 
-
 open Printf
 open AST
-
+(*TODO:
+créer les groupes.
+print_parameter est complètement indépendante! foutez lui la paix!
+*)
 (*----------------utilities-------------*)
 (*print un label dot*)
 let print_label = fun chan name position ->
