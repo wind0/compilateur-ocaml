@@ -1,15 +1,9 @@
+(* LEXEX *)
 {
   open Lexing
   open Printf
   open ParserHELIX
   open Error
-
-    let update_loc lexbuf =
-    let pos = lexbuf.lex_curr_p in
-    lexbuf.lex_curr_p <- { pos with
-      pos_lnum = pos.pos_lnum + 1;
-      pos_bol = pos.pos_cnum;
-    }
 }
 
 let digit = ['0'-'9']
@@ -24,8 +18,7 @@ let string = [^'''] (letter | digit | newline | ws)*
 
 rule token = parse
 
-(* Premier TOKEN pour un programme vide PASCAL *)
-(* ordre extrement important !!!!! *)
+(* L'ordre des token est important !!!!! *)
 
 newline {token lexbuf}
 |ws+ {token lexbuf}
@@ -83,8 +76,6 @@ newline {token lexbuf}
 |"'"([^''']* as s)"'" {STRINGC s}
 |varid as v { VARID v }
 |identifier as id { ID id }
-
-(* Token pour ajouter des VAR aux programmes *)
 
 |eof {failwith "I tried"}
 |_ {failwith "Oh my"}

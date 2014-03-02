@@ -1,18 +1,20 @@
+(* PARSER *)
 %{
     open Printf
-
     open AST
-
 %}
 
 
-/* Token */
+(* Token *)
+
 %token <string> VARID
 %token <string> ID
 
 %token <int32> INTC
+%token <string> STRINGC
+
 %token PROGRAM BEGIN END SEMICOLON DOT
-%token SIMPLECOTE NIL
+%token NIL
 %token EQ NOTEQ LT GT LE GE IN NOT
 %token MINUS PLUS MULT DIV MOD PUIS
 %token COMA DOUBLEDOT
@@ -25,32 +27,28 @@
 %token VAR CONST TYPE PROCEDURE FUNCTION
 %token IF THEN ELSE CASE
 %token WHILE DO REPEAT UNTIL FOR TO DOWNTO
-%token <string> STRINGC
-(* Start du parser *)
+
+(* Start *)
+
 %start program
 %type <AST.program> program
 
-%nonassoc COLONEQ
 %nonassoc unary_minus unary_plus
 %nonassoc THEN
 %nonassoc ELSE
-(*
-
-%nonassoc UNARYPLUS UNARYMINUS
-%left COMA
-%left LPAR
-*)
 
 %%
-(* automate : unsigned constant  *)
+
+(* Automate : unsigned constant  *)
 
 unsigned_constant : 
-	(*i = ID {i}*) 
 	integ = INTC {UNormal(UInteger(integ))}
 	|NIL {Nil}
 	|id = STRINGC {UNormal(UString(id))}
 
-(* automate : constant *)
+
+(* Automate : constant *)
+
 signe : 
 	PLUS {Plus}
 	| MINUS {Minus}
@@ -66,27 +64,28 @@ unary_signe_with_constant_id_OR_unsigned_number :
 		{ SignedBurne(Minus,uc2)}
 	| uc3 = constant_id_OR_unsigned_number {Burne(uc3)}
 
-
 constant:
-	u = unary_signe_with_constant_id_OR_unsigned_number
-	{ u }
+	u = unary_signe_with_constant_id_OR_unsigned_number { u }
 	|id = STRINGC {CString(id)}
 
-(* automate : simple type *)
+
+(* Automate : simple type *)
 
 para_recur_id:
 	LPAR i = separated_nonempty_list(COMA,ID)  RPAR {i}
 
 
 type_identifier:
-	INTEGER {TypInteger} | BOOLEAN {TypBoolean}
+	INTEGER {TypInteger} 
+	| BOOLEAN {TypBoolean}
 
 simple_type:
 	t = type_identifier {Type_identifier(t)}
 	| p = para_recur_id	{ID_list(p)}
 	| c1 = constant DOUBLEDOT c2 = constant {Enum(c1,c2)}
 
-(* automate : type *)
+
+(* Automate : type *)
 
 array_para_recur_simple_type:
 	ARRAY LBR i = separated_nonempty_list(COMA, simple_type) RBR OF typ=type_automate {(i,typ)}
@@ -96,7 +95,9 @@ type_automate:
 	| a = array_para_recur_simple_type {Array(a)}
 	| RECORD f =field_list END {Record(f)}
 
-(* automate : field list *)
+
+(* Automate : field list *)
+
 semicolon_field_list:
 	SEMICOLON f=field_list {f}
 
@@ -113,14 +114,14 @@ field_list:
 		result (i,t,sfl)}
 	| CASE i=ID COLON t=type_identifier OF p=separated_nonempty_list(SEMICOLON,line_case_field_list) {FCase(i,t,p)}
 
-(* automate : simple expression *)
-(* genial remplace ça : *)
+
+(* Automate : simple expression *)
+
 recur_simple_expression:
 	si=signe t2=term {(si,t2)}
 
 simple_expression:
 	s=signe? t=term r=recur_simple_expression*
-	(* s=signe? genial=separated_nonempty_list(signe, term) *)
 	{
 		let result  = function
 		(None, t, r) -> USigned(t,r)
@@ -129,28 +130,18 @@ simple_expression:
 		result (s,t,r)
 	}
 
-(* automate : variable *)
+
+(* Automate : variable *)
 
 boucle_intern_variable:
 	LBR e= separated_nonempty_list(COMA,expression) RBR {Brackety(e)}
-	(* cette partie là fou la merde totale !!!!! esoterique*)
 	 | DOT i = VARID {Dotty(i)}
 
 variable :
-	(* triste *)
 	i=VARID b=boucle_intern_variable* {(i,b)}
 
 
-(* automate factor *)
-
-(*
-(** ancienne version **)
-mult_expression:
-	COMA e = expression {sprintf ", %s" e}
-
-after_function_identifier:
-	LPAR m=mult_expression em=mult_expression* RPAR {sprintf " ( %s %s )" m (String.concat "" em)}
-*)
+(* Automate factor *)
 
 after_function_identifier:
 	LPAR e=separated_nonempty_list(COMA,expression)  RPAR {e}
@@ -159,7 +150,6 @@ after_LBR:
 	e=separated_nonempty_list(COMA, expression) {e}
 
 factor:
-	(* les 3 suivantes *)
 	u = unsigned_constant {UConst(u)}
 	| v = variable {Var(v)}
 	|funct = ID a=after_function_identifier? 
@@ -181,7 +171,8 @@ factor:
 	result a
 	}
 
-(* automate term *)
+
+(* Automate term *)
 
 operator_term:
 	MULT {Times}
@@ -196,12 +187,11 @@ term:
 	f = factor m = mult_factor* {(f,m)}
 
 
-
-(* automate expression *)
+(* Automate expression *)
 
 opexp:
 	EQ {Eq}
-	|NOTEQ {Neq} (*WTFBBQ?*)
+	|NOTEQ {Neq}
 	|LT {Lt}
 	|GT {Gt}
 	|LE {Le}
@@ -221,7 +211,7 @@ expression:
 	}
 
 
-(* automate statement *)
+(* Automate statement *)
 
 expr_or_procid:
 	id = ID {Id(id)}
@@ -237,13 +227,9 @@ incr_decr:
 	TO {To}
 	|DOWNTO {Downto}
 
-(*else_pos:
-	ELSE s = statement {sprintf "else %s" s}	*)
-
 variable_or_id:
 	v = variable {Variable(v)}
 	|func = ID {Id2(func)} 
-
 
 statement:
 (* oui statement peut etre vide *)
@@ -257,7 +243,8 @@ statement:
 	|REPEAT s = separated_nonempty_list(SEMICOLON, statement) UNTIL e = expression {Repeat(s,e)}
 	|FOR i = VARID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {For(i,e,inc,e2,s)} 
 
-(* BLOCK *)
+
+(* Automate block *)
 
 
 (*Constante*)
@@ -283,7 +270,6 @@ block_type:
 
 
 (*Var*)
-
 init_var:
 	i = separated_nonempty_list(COMA, VARID) COLON t = type_automate SEMICOLON {(i,t)}
 
@@ -293,22 +279,8 @@ block_var:
 	{i}
 
 
-(*Procedure et Function*)
-(*
-mult_parameter:
-	SEMICOLON p = under_parameter_list {sprintf "; %s" p}
+(* Automate parameter list*)
 
-under_parameter_list:
-	i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter* {sprintf "%s : %s %s" (String.concat "" i) t (String.concat "" mp)}
-	| FUNCTION i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter* {sprintf "function %s : %s %s " (String.concat "" i) t (String.concat "" mp)}
-	| VAR i = separated_nonempty_list(COMA,ID) COLON t = type_identifier mp = mult_parameter* {sprintf "var %s : %s %s " (String.concat "" i) t (String.concat "" mp)}
-	| PROCEDURE i = separated_nonempty_list(COMA,ID) mp = mult_parameter* {sprintf "procedure %s %s" (String.concat "" i) (String.concat "" mp)}
-
-parameter_list:
-	LPAR u=under_parameter_list mp=mult_parameter* RPAR {sprintf "( %s %s )" u (String.concat "" mp)}
-*)
-
-(*Procedure et Function*)
 mult_parameter:
 SEMICOLON p = under_parameter_list {p}
 
@@ -325,9 +297,11 @@ i = separated_nonempty_list(COMA,VARID) COLON t = type_identifier {ClassicParame
 | PROCEDURE i = separated_nonempty_list(COMA,ID) {ProcedureParameter(i,NoneParameter)}
 | PROCEDURE i = separated_nonempty_list(COMA,ID) mp = mult_parameter {ProcedureParameter(i, mp)}
 
-
 parameter_list:
 LPAR u = under_parameter_list RPAR {u}
+
+
+(* Automate procedure et function *)
 
 procedure:
 	PROCEDURE i = ID pa = parameter_list? SEMICOLON b = block SEMICOLON
@@ -340,7 +314,7 @@ procedure:
 			proc_body = b;
 		}
 	}	
-	(* fonction *)
+
 function_bl:
 	FUNCTION i = ID pa = parameter_list? COLON t = type_identifier SEMICOLON b = block SEMICOLON
 	{
@@ -354,6 +328,8 @@ function_bl:
 		}
 	}
 
+
+
 (* Main block *)
 
 block:
@@ -363,12 +339,6 @@ block:
 	pro = procedure*
 	func = function_bl*
 	BEGIN
-		(*du debug, pour le moment*)
-		(* b = unsigned_constant* *)
-		(*c = constant* *)
-		(*s = simple_type* *)
-		(*t = type_automate* *)
-		(*f = field_list* *)
 		s = separated_list(SEMICOLON, statement)
 	END
 	{ 
@@ -385,22 +355,14 @@ block:
 			statements = s;
 		}	
 	}
-(* pseudo main : Structure principale d'un programme PASCAL *)
+
+
+(*Pseudo main : Structure principale d'un programme PASCAL *)
+
 program:
 	PROGRAM i = ID SEMICOLON
 		b = block
-		(*e = statement* *)
 	DOT
-	(*{
-		let extract = fun rechercher ->
-		match rechercher with
-		| None -> ""
-		| Some x -> x
-		in
-		let bstr = extract b 
-		in
-		printf "program %s;\n begin\n %s\n end.\n\n" i bstr}
-	*)
 	{{
 		prog_name = i;
 		prog_body = b;
