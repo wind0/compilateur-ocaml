@@ -129,7 +129,7 @@ in let position1 = print_sign s chan position position
 in print_burne b chan position position1
 |Burne b -> print_burne b chan father max
 |CString s -> let position = print_init "STRING" chan father max
-in print_init1 s chan position
+in print_init1 (String.escaped s) chan position
 
 
 let print_constant_list = print_lister "CONST_LIST" print_constant
