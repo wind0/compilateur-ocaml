@@ -66,12 +66,14 @@ ID : identifier
 
 
 %%
-(* automate : unsigned constant  *)
+(* Automate : unsigned constant  *)
 
 unsigned_constant : 
 	INTC |NIL | STRINGC
 
-(* automate : constant *)
+
+(* Automate : constant *)
+
 signe : 
 	PLUS | MINUS
 
@@ -83,12 +85,12 @@ unary_signe_with_constant_id_OR_unsigned_number :
 	| MINUS constant_id_OR_unsigned_number 
 	| constant_id_OR_unsigned_number
 
-
 constant:
 	unary_signe_with_constant_id_OR_unsigned_number
 	| STRINGC
 
-(* automate : simple type *)
+
+(* Automate : simple type *)
 
 para_recur_id:
 	LPAR ID (COMA,ID)* RPAR
@@ -99,7 +101,8 @@ type_identifier:
 simple_type:
 	type_identifier | para_recur_id | constant DOUBLEDOT constant
 
-(* automate : type *)
+
+(* Automate : type *)
 
 array_para_recur_simple_type:
 	ARRAY LBR simple_type (COMA, simple_type)* RBR OF type_automate
@@ -107,7 +110,9 @@ array_para_recur_simple_type:
 type_automate:
 	simple_type | array_para_recur_simple_type | RECORD field_list END
 
-(* automate : field list *)
+
+(* Automate : field list *)
+
 semicolon_field_list:
 	SEMICOLON field_list
 
@@ -118,14 +123,17 @@ field_list:
 	ID (COMA, ID)* COLON type_automate semicolon_field_list?
 	| CASE ID COLON type_identifier OF line_case_field_list (SEMICOLON,line_case_field_list)*
 
-(* automate : simple expression *)
+
+(* Automate : simple expression *)
+
 recur_simple_expression:
 	signe term
 
 simple_expression:
 	signe? term recur_simple_expression*
 
-(* automate : variable *)
+
+(* Automate : variable *)
 
 boucle_intern_variable:
 	LBR expression (COMA,expression)* RBR
@@ -135,7 +143,7 @@ variable :
 	VARID boucle_intern_variable*
 
 
-(* automate factor *)
+(* Automate : factor *)
 
 after_function_identifier:
 	LPAR expression (COMA,expression)* RPAR
@@ -151,7 +159,8 @@ factor:
 	|NOT factor
 	|LBR after_LBR? RBR 
 
-(* automate term *)
+
+(* Automate : term *)
 
 operator_term:
 	MULT
@@ -166,8 +175,7 @@ term:
 	factor mult_factor*
 
 
-
-(* automate expression *)
+(* Automate : expression *)
 
 opexp:
 	EQ
@@ -185,7 +193,7 @@ expression:
 	simple_expression opexp_with_simple_expression?
 
 
-(* automate statement *)
+(* Automate : statement *)
 
 expr_or_procid:
 	ID	| expression
@@ -202,7 +210,6 @@ incr_decr:
 variable_or_id:
 	variable | ID
 
-
 statement:
 	|variable_or_id COLONEQ expression
 	|ID expr_proc? 
@@ -214,8 +221,8 @@ statement:
 	|REPEAT statement (SEMICOLON, statement)* UNTIL expression
 	|FOR VARID COLONEQ expression incr_decr expression DO statement
 
-(* BLOCK *)
 
+(* Automate : block *)
 
 (*Constante*)
 init_const:
@@ -245,7 +252,8 @@ block_var:
 	init_var+
 
 
-(*Procedure et Function*)
+(* Automate : parameter list*)
+
 mult_parameter:
 	SEMICOLON under_parameter_list
 
@@ -265,12 +273,15 @@ under_parameter_list:
 parameter_list:
 	LPAR under_parameter_list RPAR
 
+
+(* Automate : procedure et function *)
+
 procedure:
 	PROCEDURE ID parameter_list? SEMICOLON block SEMICOLON
 
-(* fonction *)
 function_bl:
 	FUNCTION ID parameter_list? COLON type_identifier SEMICOLON block SEMICOLON
+
 
 (* Main block *)
 
@@ -283,6 +294,7 @@ block:
 	BEGIN
 		statement (SEMICOLON, statement)*
 	END
+
 
 (* pseudo main : Structure principale d'un programme PASCAL *)
 program:

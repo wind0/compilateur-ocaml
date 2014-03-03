@@ -141,7 +141,7 @@ variable :
 	i=VARID b=boucle_intern_variable* {(i,b)}
 
 
-(* Automate factor *)
+(* Automate : factor *)
 
 after_function_identifier:
 	LPAR e=separated_nonempty_list(COMA,expression)  RPAR {e}
@@ -172,7 +172,7 @@ factor:
 	}
 
 
-(* Automate term *)
+(* Automate : term *)
 
 operator_term:
 	MULT {Times}
@@ -187,7 +187,7 @@ term:
 	f = factor m = mult_factor* {(f,m)}
 
 
-(* Automate expression *)
+(* Automate : expression *)
 
 opexp:
 	EQ {Eq}
@@ -211,7 +211,7 @@ expression:
 	}
 
 
-(* Automate statement *)
+(* Automate : statement *)
 
 expr_or_procid:
 	id = ID {Id(id)}
@@ -244,7 +244,7 @@ statement:
 	|FOR i = VARID COLONEQ e = expression inc = incr_decr e2 = expression DO s = statement {For(i,e,inc,e2,s)} 
 
 
-(* Automate block *)
+(* Automate : block *)
 
 
 (*Constante*)
@@ -279,7 +279,7 @@ block_var:
 	{i}
 
 
-(* Automate parameter list*)
+(* Automate : parameter list*)
 
 mult_parameter:
 SEMICOLON p = under_parameter_list {p}
@@ -301,7 +301,7 @@ parameter_list:
 LPAR u = under_parameter_list RPAR {u}
 
 
-(* Automate procedure et function *)
+(* Automate : procedure et function *)
 
 procedure:
 	PROCEDURE i = ID pa = parameter_list? SEMICOLON b = block SEMICOLON
@@ -330,7 +330,7 @@ function_bl:
 
 
 
-(* Main block *)
+(* Main : block *)
 
 block:
 	bc = block_const?
@@ -357,7 +357,7 @@ block:
 	}
 
 
-(*Pseudo main : Structure principale d'un programme PASCAL *)
+(* Pseudo main : Structure principale d'un programme PASCAL *)
 
 program:
 	PROGRAM i = ID SEMICOLON

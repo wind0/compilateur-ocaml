@@ -1,24 +1,22 @@
-(* Track 1: Identifier(s?) *) 
-(* 	One type to rule them all, One type to define them, 
-	One type to bring them all and in the darkness bind them *)
+(* Identifier *) 
 type identifier  = string
 
 
-(* Track 2: Basic Types *)
+(* Basic Types *)
 
 type typ = 
 TypInteger
 |TypBoolean
 
 
-(* Track 3: Constants and shit*)
+(* Constants *)
+
 type unsigned_constant =
 |UInteger of int32
 |UString of string
 type unsigned_constant_nil =
 |UNormal of unsigned_constant
 |Nil
-(*| String of string *)
 
 type sign = 
 |Plus
@@ -27,33 +25,33 @@ and burne =
 |BIdentified of identifier
 |BInteger of int32
 and constant = 
-(*String of string*)
 |SignedBurne of (sign * burne)
 |Burne of burne
 |CString of string
 
-(* Track 4: Types returns! *)
+
+(* Types returns *)
+
 type simple_type =
 |Type_identifier of typ
-|ID_list of identifier list (* I guess *)
+|ID_list of identifier list
 |Enum of constant * constant
 
-(* Track 5: I don't really understand...and it shows*)
-(* please get better! *)
 type field_list = 
 |Recur of (identifier list ) * type_automate
 |RecurPlus of (identifier list) * type_automate * field_list
 |FCase of identifier * typ * line_case_field_list list
-and line_case_field_list = (*F*** this name*)
+and line_case_field_list =
 constant list * field_list
-and type_automate = (*F*** this name too*)
+and type_automate = 
 |Simple of simple_type
 |Array of array_type_automate
 |Record of field_list
 and array_type_automate =
 simple_type list * type_automate
 
-(*Bonus Track: operators*)
+
+(* Operators *)
 type log_bin_op =
   | Lt                                       
   | Le
@@ -69,7 +67,8 @@ type operator_term =
 |Mod
 |Pow
 
-(* Track 6: Variables*)
+
+(* Variables *)
 type boucle_intern_variable =
 |Brackety of expression list
 |Dotty of identifier
@@ -77,9 +76,7 @@ type boucle_intern_variable =
 and variable = identifier * boucle_intern_variable list
 
 
-
-
-(* Track 7: Expressions (This is a goodie)*)
+(* Expressions *)
 and factor =
 |UConst of unsigned_constant_nil
 |Var of variable
@@ -99,8 +96,9 @@ and expression =
 |ESimple of simple_expression
 |EOperation of simple_expression * log_bin_op * simple_expression
 
-(* Track 8: BRB, vomiting blood *)
-type expr_or_procid =(* this name...*)
+
+(* Statement *)
+type expr_or_procid =
 |Id of identifier
 |Expr of expression
 
@@ -116,7 +114,7 @@ type single_case = constant list * statement
 
 and statement =
 |Affect of variable_or_id * expression
-|Wut of identifier * expr_or_procid list (*remplacer Wut par ce que c'est en vrai*)
+|Wut of identifier * expr_or_procid list
 |Embedded of statement list
 |IfThen of expression * statement
 |IfThenElse of expression * statement * statement
@@ -126,7 +124,7 @@ and statement =
 |For of identifier * expression * incr_or_decr * expression * statement
 
 
-(* Track 9: How is this not over yet?*)
+(* Block *)
 
 type init_const = identifier * constant
 
@@ -140,17 +138,15 @@ type init_var = identifier list * type_automate
 
 type block_var = init_var list
 
-type parameter_list = parameter (*Well shit*)
+type parameter_list = parameter
 
 and parameter = 
 |NoneParameter
 |ClassicParameter of identifier list * typ * parameter
 |FunctionParameter of identifier list * typ * parameter
-|VariableParameter of identifier list * typ * parameter (*Hummmmm*)
+|VariableParameter of identifier list * typ * parameter
 |ProcedureParameter of identifier list * parameter
 
-(* Track 10: Supa Finishu!*)
-(*A voir si ya besoin de les remplacer par des record*)
 type procedure = {
 proc_name : identifier;
 proc_parameters : parameter_list;
