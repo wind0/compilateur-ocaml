@@ -59,10 +59,10 @@ constant_id_OR_unsigned_number:
 
 unary_signe_with_constant_id_OR_unsigned_number :
 	PLUS uc = constant_id_OR_unsigned_number %prec unary_plus 
-		{ SignedBurne(Plus,uc)}
+		{ SignedIdOrNumber(Plus,uc)}
 	| MINUS uc2 = constant_id_OR_unsigned_number %prec unary_minus 
-		{ SignedBurne(Minus,uc2)}
-	| uc3 = constant_id_OR_unsigned_number {Burne(uc3)}
+		{ SignedIdOrNumber(Minus,uc2)}
+| uc3 = constant_id_OR_unsigned_number {IdOrNumber(uc3)}
 
 constant:
 	u = unary_signe_with_constant_id_OR_unsigned_number { u }
@@ -234,7 +234,7 @@ variable_or_id:
 statement:
 (* oui statement peut etre vide *)
 	|v = variable_or_id COLONEQ e = expression {Affect(v,e)}
-	|i = ID e = expr_proc? {let result = function (i, None) -> Wut(i,[])| (i, Some x) -> Wut(i,x) in result (i,e)}
+	|i = ID e = expr_proc? {let result = function (i, None) -> ProcInit(i,[])| (i, Some x) -> ProcInit(i,x) in result (i,e)}
 	|BEGIN s = separated_nonempty_list(SEMICOLON, statement) END {Embedded(s)}
 	|IF e = expression THEN s = statement {IfThen(e,s)}   
 	|IF e = expression THEN s = statement ELSE s2 = statement {IfThenElse(e,s,s2)}

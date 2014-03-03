@@ -116,7 +116,7 @@ match s with
 |Minus -> my_print "-"
 
 
-let print_burne = fun b chan father max->
+let print_id_or_number = fun b chan father max->
 match b with
 |BIdentified id -> print_id id chan father max
 |BInteger i -> print_id (sprintf "%li" i) chan father max
@@ -124,10 +124,10 @@ match b with
 
 let print_constant = fun c chan father max->
 match c with
-|SignedBurne (s,b) -> let position = print_init "SIGNED_CONSTANT" chan father max 
+|SignedIdOrNumber (s,b) -> let position = print_init "SIGNED_CONSTANT" chan father max 
 in let position1 = print_sign s chan position position
-in print_burne b chan position position1
-|Burne b -> print_burne b chan father max
+in print_id_or_number b chan position position1
+|IdOrNumber b -> print_id_or_number b chan father max
 |CString s -> let position = print_init "STRING" chan father max
 in print_init1 (String.escaped s) chan position
 
@@ -338,7 +338,7 @@ in match stat with
 |Affect (var, exp) -> 	let position1 = print_init1 ":=" chan position 
 in let position2 = print_var_or_id var chan position1 position1 
 in print_expr exp chan position1 position2
-|Wut (id, exp_id_list) -> 	let position1 = print_init1 "Procedure init" chan position 
+|ProcInit (id, exp_id_list) -> 	let position1 = print_init1 "Procedure init" chan position 
 in let position2 = print_id id chan position1 position1
 in print_expr_id_list exp_id_list chan position1 position2
 |Embedded(statement_list) ->	(print_lister "Statement list" print_statement) statement_list chan position position

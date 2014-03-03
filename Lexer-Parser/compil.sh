@@ -1,7 +1,7 @@
 set -e -u
 
 rm -f module/*.cmi module/*.cmo
-rm *.dot
+rm -f *.dot
 ocamlc AST.mli
 ocamlc -c error.ml
 ocamlc -c astprinter.ml
@@ -13,3 +13,5 @@ ocamlc -c parserHELIX.ml
 ocamlc -c main.ml 
 mv *.cm* module
 ocamlc -o main -I module error.cmo astprinter.cmo lexer.cmo parserHELIX.cmo main.cmo
+./main
+dot -Tpng foulemoila.dot > output.png

@@ -21,12 +21,12 @@ type unsigned_constant_nil =
 type sign = 
 |Plus
 |Minus
-and burne = 
+and idornumber = 
 |BIdentified of identifier
 |BInteger of int32
 and constant = 
-|SignedBurne of (sign * burne)
-|Burne of burne
+|SignedIdOrNumber of (sign * idornumber)
+|IdOrNumber of idornumber
 |CString of string
 
 
@@ -114,7 +114,7 @@ type single_case = constant list * statement
 
 and statement =
 |Affect of variable_or_id * expression
-|Wut of identifier * expr_or_procid list
+|ProcInit of identifier * expr_or_procid list
 |Embedded of statement list
 |IfThen of expression * statement
 |IfThenElse of expression * statement * statement
