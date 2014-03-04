@@ -159,13 +159,13 @@ in let position1 = print_typ_auto typ_auto chan father position
 in print_field_list fl chan father position1
 |FCase (id, t, line_case_field_list) -> let position = print_id id chan father max
 in let position1 = print_typ t chan father position
-in (print_lister "LINE_CASE_FIELD_LIST" print_line_case) line_case_field_list chan father position
+in (print_lister "LINE_CASE_FIELD_LIST" print_line_case) line_case_field_list chan father position1
 
 
 and print_line_case = fun (c_list, fl) chan father max->
 let position = print_init "LINE_CASE" chan father max
 in let position2 = print_constant_list c_list chan position position
-in print_field_list fl chan father max
+in print_field_list fl chan position2 position2
 
 
 and print_typ_auto = fun t chan father max ->
@@ -233,7 +233,7 @@ in print_factor f chan position position1
 and print_term = fun (fac, op_fact_list) chan father max ->
 let position = print_init "TERM" chan father max
 in let position2 = print_factor fac chan position position
-in (print_lister "OP_TERM_FACT_LIST" print_op_term_fact) op_fact_list chan father max
+in (print_lister "OP_TERM_FACT_LIST" print_op_term_fact) op_fact_list chan position2 position2
 
 
 and print_sign_term = fun (sign, term) chan father max ->
@@ -269,8 +269,8 @@ match biv with
 
 and print_var = fun (id,biv_list) chan father max->
 let position = print_init "VARIABLE" chan father max
-in let position1 = print_id id chan father max
-in (print_lister "BOUCLE_INTERNE_VARIABLE_LIST" print_biv) biv_list chan father max
+in let position1 = print_id id chan position position
+in (print_lister "BOUCLE_INTERNE_VARIABLE_LIST" print_biv) biv_list chan position position1
 
 
 (* Print initial type *)
@@ -381,7 +381,7 @@ in let position3 = print_block_type block.types chan me position2
 in let position4 = print_block_var block.variables chan me position3
 in let position5 = (print_lister "PROCEDURE_LIST" print_procedure) block.procedures chan me position4
 in let position6 = (print_lister "FUNCTION_LIST") print_function  block.functions chan me position5
-in (print_lister "Statement list" print_statement) block.statements chan me position4
+in (print_lister "Statement list" print_statement) block.statements chan me position6
 
 
 and print_procedure = fun proc chan father max ->
