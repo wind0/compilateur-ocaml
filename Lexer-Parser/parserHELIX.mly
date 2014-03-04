@@ -33,7 +33,6 @@
 %start program
 %type <AST.program> program
 
-%nonassoc unary_minus unary_plus
 %nonassoc THEN
 %nonassoc ELSE
 
@@ -58,9 +57,9 @@ constant_id_OR_unsigned_number:
 	|integ = INTC {BInteger(integ)}
 
 unary_signe_with_constant_id_OR_unsigned_number :
-	PLUS uc = constant_id_OR_unsigned_number %prec unary_plus 
+	PLUS uc = constant_id_OR_unsigned_number
 		{ SignedIdOrNumber(Plus,uc)}
-	| MINUS uc2 = constant_id_OR_unsigned_number %prec unary_minus 
+	| MINUS uc2 = constant_id_OR_unsigned_number
 		{ SignedIdOrNumber(Minus,uc2)}
 | uc3 = constant_id_OR_unsigned_number {IdOrNumber(uc3)}
 
