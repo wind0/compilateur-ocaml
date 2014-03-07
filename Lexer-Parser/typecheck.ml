@@ -134,6 +134,64 @@ my_procs = mprocs;
 }
 
 
+let rec typc_exp = fun expected bt exp ->
+match expected, exp with
+|TypInteger , EOperation  _ -> failwith("trying to fit a boolean operation in an integer")
+|_ , EOperation (e1, logop, e2) -> begin 	match typc_sexp TypInteger bt e1, typc_sexp TypInteger bt e2 with
+					|TypInteger, TypInteger -> TypBoolean
+					|_ -> failwith("cannot numerically compare other types than integers")
+				end
+|a , ESimple s -> begin match a, typc_sexp a bt s with
+		| t1 , t2 when t1 == t2 -> a
+		|_ -> failwith ("wrong type in a simple expression")
+		end
+and typc_sexp = fun expected bt exp ->
+match expected , exp with
+TypBoolean, Signed _ | TypBoolean, USigned (_, _::_) -> failwith ("do you want to sign a boolean?")
+|TypBoolean, USigned (terme, _) -> typc_term expected bt terme 
+|_ , USigned (terme, terme_sign_list) | _, Signed(_, terme, terme_sign_list)
+	-> match typc_term expected bt terme, typc_term_list expected bt terme_sign_list with
+						|TypInteger, TypInteger -> TypInteger
+						| _ -> failwith("Doing sums on a WRONG type")
+
+and typc_term = fun expected bt terme ->
+match expected, terme with
+|TypBoolean, ( _ , _::_) -> failwith("multiplication on a boolean")
+| _ , ( f, []) -> typc_factor expected bt f
+|_, (f, l)-> if List.for_all (function a -> let test = typc_factor TypInteger bt a in test == TypInteger) (List.map (function (a,b) -> b) l)
+		then TypInteger
+		else failwith("???????????")
+
+and typc_term_list = fun expected bt terme_list ->
+if List.for_all (function t -> let test = typc_term expected bt t in test = expected) (List.map (function (a,b) -> b) terme_list)
+then expected
+else failwith ("??")
+
+and typc_factor = fun expected bt terme ->
+match expected, terme with
+|_, UConst _ -> TypInteger
+|TypBoolean , Neg_factor n -> typc_factor expected bt n
+|TypInteger, Neg_factor _ -> failwith("negation of an integer")
+|_ , Brackets _ -> failwith("No brackets for now, sorry")
+|_, Var (v,_) -> List.assoc v bt.my_vars
+|_, Function (i,_) -> let cut_tuple = fun (a,b,c)-> a,b in
+			let ft = List.map cut_tuple bt.my_funcs
+			in List.assoc i ft
+|_, Expression a -> typc_exp expected bt a 
+
+let rec typc_statement = fun bt stat ->
+match stat with
+|Affect((Id2 i),e) -> let expected = List.assoc i bt.my_vars in (typc_exp expected bt e) = expected
+|Embedded s_list -> List.for_all (fun a -> typc_statement bt a) s_list
+|IfThen (e, s)  | While (e, s) -> ((typc_exp TypBoolean bt e) == TypBoolean) && (typc_statement bt s)
+|IfThenElse (e,s1,s2) -> ((typc_exp TypBoolean bt e)== TypBoolean) && (typc_statement bt s1) && (typc_statement bt s2)
+|Repeat (stat_list , e) -> (List.for_all (fun a ->typc_statement bt a) stat_list) && ((typc_exp TypBoolean bt e)==TypBoolean)
+|_ -> true
+
+
+
+
+
 
 
 
