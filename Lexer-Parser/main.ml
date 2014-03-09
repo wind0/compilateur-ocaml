@@ -1,7 +1,7 @@
 open Astprinter
 open Typecheck
 
-let chan = open_in "Test_file/test_0.2.5.pas"
+let chan = open_in "Test_file/test_type_03.pas"
 let lexbuf = Lexing.from_channel chan
 
 let magical_pamyu = ParserHELIX.program Lexer.token lexbuf
