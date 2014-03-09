@@ -1,5 +1,6 @@
 open AST
-
+module Typecheck = 
+struct
 type symbol = string *  typ
 
 type const = 
@@ -188,23 +189,10 @@ match stat with
 |Repeat (stat_list , e) -> (List.for_all (fun a ->typc_statement bt a) stat_list) && ((typc_exp TypBoolean bt e)==TypBoolean)
 |_ -> true
 
+let verif_bloc = fun bloc ->
+let bt = make_block_table bloc
+in List.for_all (fun a -> typc_statement bt a) bloc.statements 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+let typc_prog = fun prog ->
+verif_bloc prog.prog_body
+end

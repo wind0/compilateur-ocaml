@@ -36,8 +36,10 @@ match elem_list with
 |h::t -> let position = func h chan father max in print_list t chan father position func
 
 let print_lister = fun name func elem_list chan father max ->
-let position = print_init name chan father max
-in print_list elem_list chan father position func
+match elem_list with 
+|[] -> max
+| h::t -> let position = print_init name chan father max
+in print_list elem_list chan position position func
 
 
 (*----------------Let us start-----------------*)
