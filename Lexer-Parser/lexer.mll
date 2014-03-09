@@ -2,7 +2,7 @@
 {
   open Lexing
   open Printf
-  open ParserHELIX
+  open ParserFinal
   open Error
 }
 
