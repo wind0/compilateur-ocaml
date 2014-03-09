@@ -71,7 +71,7 @@ begin
 
 	maxi := Max(x,y);
 
-	maxboole := Maxboolx(x,y)
+	maxboole := Maxboolx(x,y);
 
 	i := 10;
 
@@ -85,11 +85,8 @@ begin
 	until
 		i > 10;
 
-	with x,y,z do 
-		z := x + y;
-
 	for j := 0 to 10 do
-		x := y;
+		x := y;	
 
 	b1 := x = y
 
