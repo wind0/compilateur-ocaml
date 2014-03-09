@@ -182,12 +182,12 @@ match expected, terme with
 
 let rec typc_statement = fun bt stat ->
 match stat with
-|Affect((Id2 i),e) -> let expected = List.assoc i bt.my_vars in Printf.printf("youpi"); (typc_exp expected bt e) == expected
+|Affect((Id2 i),e) |Affect((Variable (i, _)) ,e) -> let expected = List.assoc i bt.my_vars in (typc_exp expected bt e) == expected
 |Embedded s_list -> List.for_all (fun a -> typc_statement bt a) s_list
 |IfThen (e, s)  | While (e, s) -> ((typc_exp TypBoolean bt e) == TypBoolean) && (typc_statement bt s)
 |IfThenElse (e,s1,s2) -> ((typc_exp TypBoolean bt e)== TypBoolean) && (typc_statement bt s1) && (typc_statement bt s2)
 |Repeat (stat_list , e) -> (List.for_all (fun a ->typc_statement bt a) stat_list) && ((typc_exp TypBoolean bt e)==TypBoolean)
-|_ -> Printf.printf("j'aime les marrons\n");true
+|_ -> true
 
 let verif_bloc = fun bloc ->
 let bt = make_block_table bloc
