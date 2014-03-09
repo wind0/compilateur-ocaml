@@ -187,7 +187,7 @@ match stat with
 |IfThen (e, s)  | While (e, s) -> ((typc_exp TypBoolean bt e) == TypBoolean) && (typc_statement bt s)
 |IfThenElse (e,s1,s2) -> ((typc_exp TypBoolean bt e)== TypBoolean) && (typc_statement bt s1) && (typc_statement bt s2)
 |Repeat (stat_list , e) -> (List.for_all (fun a ->typc_statement bt a) stat_list) && ((typc_exp TypBoolean bt e)==TypBoolean)
-|_ -> true
+|_ -> Printf.printf("j'aime les marrons\n");true
 
 let verif_bloc = fun bloc ->
 let bt = make_block_table bloc
