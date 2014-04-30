@@ -1,0 +1,21 @@
+
+#ouverture fichier:
+let lecture_stream = open_in "fichier";;
+let ecriture_stream = open_out "fichier";;
+
+#fermeture et flush:
+close_in lecture_stream;;
+close_out ecriture_stream;;
+flush_all;;
+flush ecriture_stream;;
+
+#lecture et ecriture
+
+output_binary_int ecriture_stream 78;;
+##attention aux flush, préférer fermer le flux avant de le lire
+let youpi = input_binary_int lecture_stream
+
+
+###Vous savez tout maintenant!!!
+
+
