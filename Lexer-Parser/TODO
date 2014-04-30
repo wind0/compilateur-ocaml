@@ -1,0 +1,15 @@
+Deco de l'arbre
+	créer un compteur dans un fichier en r/w 
+	effacer le fichier en fin de compil
+Resolution des registres
+	créer un nouveau compteur (parce que tableaux)
+	de même qu'avant
+Création des Frames
+	Sdd déjà faite
+	changer tous les calls en call de frame statiques
+	encapsuler les bouts de l'ast relatifs à chaque fonction en blocs d'instructions
+Résolution des instructions
+	remplacer la forme des instructions type AST en insctruction type langage intermédiaire
+	encapsuler des bouts d'AST à la place des expressions
+Le futur!
+	Les hoverboards
