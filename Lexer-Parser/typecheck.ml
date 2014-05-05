@@ -1,7 +1,21 @@
 open AST
+open Compteur
 module Typecheck = 
 struct
-type symbol = string *  typ
+
+let compteurinitreg = Compteur.compteurinit "test"
+
+let compteur_reg = Compteur.compteur "test"
+
+
+
+type typ2 = 
+TypInteger2
+|TypBoolean2
+(*            1st index * length * typ *)
+|TypArray2 of int32 * int32 * typ2
+
+type symbol = string *  typ2 * int32
 
 type const = 
 |Cinteger of symbol * int32
@@ -11,7 +25,7 @@ type table_symbol = symbol list
 
 type constant_table = const list
 
-type function_table_p = table_symbol
+type function_table_p = (string * typ) list
 
 type variable_table = table_symbol
 
@@ -22,14 +36,22 @@ type parameter_tuple = table_symbol * function_table_p * variable_table * proced
 type procedure_table = identifier * parameter_tuple
 type function_table = identifier * typ * parameter_tuple
 
-(*associe une liste d'identifiant et un type à une liste de (identifiant,type) *)
+(*associe une liste d'identifiant et un type à une liste de (identifiant,type, regnum) *)
 let rec make_my_list_rec = fun id_list typ res->
 match id_list with
-|h::t -> make_my_list_rec t typ ((h,typ)::res)
+|h::t -> make_my_list_rec t typ ((h,typ,compteur_reg 1)::res)
 |[] -> res
 
 let make_my_list = fun id_list typ ->
 make_my_list_rec id_list typ []
+
+let make_my_list_tab = fun id_list c1 c2 typ ->
+let rec make_my_list_tab_rec = fun id_list res ->
+	match id_list with
+	 h::t -> let tmp = (Int32.add (Int32.sub c2 c1 )  Int32.one)
+		 in	make_my_list_tab_rec t ((h, TypArray2 ( c1,tmp , typ), compteur_reg (Int32.to_int tmp))::res)
+	|[] -> res
+in make_my_list_tab_rec id_list []
 
 
 (*Les variables de base*)
@@ -37,7 +59,13 @@ make_my_list_rec id_list typ []
 (*manque pas mal de trucs, tableaux, strings et records*)
 let get_init_var = fun ivar ->
 match ivar with
-|(id_l, Simple (Type_identifier ty)) -> Some (make_my_list id_l ty)
+|(id_l, Simple (Type_identifier ty)) -> begin match ty with  TypInteger -> Some (make_my_list id_l TypInteger2)
+							    |TypBoolean -> Some (make_my_list id_l TypBoolean2)
+					end
+|(id_l, Array ([Enum (IdOrNumber(BInteger c1), IdOrNumber(BInteger c2))], Simple (Type_identifier ty))) -> 
+					begin match ty with 	TypInteger -> Some ( make_my_list_tab id_l c1 c2 TypInteger2)
+								|TypBoolean -> Some (make_my_list_tab id_l c1 c2 TypBoolean2)
+					end
 |_ -> None
 
 
@@ -67,7 +95,7 @@ match iconst with
 		| _ -> failwith("Impossible error2!")
 		end
 		in	
-		Some(Cinteger((id,TypInteger),value))
+		Some(Cinteger((id,TypInteger,compteur_reg 1),value))
 
 let rec create_table_const_rec = fun bl_const res ->
 match bl_const with
@@ -194,5 +222,6 @@ let bt = make_block_table bloc
 in List.for_all (fun a -> typc_statement bt a) bloc.statements 
 
 let typc_prog = fun prog ->
-verif_bloc prog.prog_body
+let _ = compteurinitreg 0
+in verif_bloc prog.prog_body
 end
