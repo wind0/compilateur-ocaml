@@ -1,9 +1,10 @@
 Deco de l'arbre
-	créer un compteur dans un fichier en r/w 
-	effacer le fichier en fin de compil
+	créer un compteur dans un fichier en r/w DONE 
+	effacer le fichier en fin de compil DONE
 Resolution des registres
-	créer un nouveau compteur (parce que tableaux)
-	de même qu'avant
+	créer un nouveau compteur (parce que tableaux) en vrai le meme que pour la deco
+	faire une table
+	
 Création des Frames
 	Sdd déjà faite
 	changer tous les calls en call de frame statiques
