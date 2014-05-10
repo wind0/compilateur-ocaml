@@ -13,9 +13,9 @@ var
 	maxboole : boolean;
 	i,j : integer;
 
-procedure Test (x : integer) ;
+procedure Test (a : integer) ;
 begin
-	x := 10
+	a := 10
 end;
 
 function Testfunc : integer;
@@ -26,14 +26,14 @@ begin
 	Testfunc := val
 end;
 
-function Max (x : integer; y : integer) : integer;
+function Max (x1 : integer; y1 : integer) : integer;
 var
 	maxi : integer;
 begin
-	if x > y then
-		maxi := x
+	if x1 > y1 then
+		maxi := x1
 	else
-		maxi := y;
+		maxi := y1;
 	Max := maxi
 end;
 

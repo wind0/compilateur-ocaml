@@ -7,7 +7,7 @@ type
 var
 	ezaf : boolean;	
 	ezafd : integer;
-	y,z : integer;
+	y : integer;
 procedure Test; begin end;
 function Teste (var z : boolean) : integer; 
 begin

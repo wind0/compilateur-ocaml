@@ -80,9 +80,9 @@ let rec print_parameter = fun typ chan father max ->
 let position = print_init "PARAMETER" chan father max
 in
 match typ with
-|NoneParameter -> print_init "NoneParameter" chan father position
+|NoneParameter -> print_init "NoneParameter" chan position position
 |ClassicParameter(identifier_list, typ, parameter) ->
-let position1 = print_init "ClassicParameter" chan father position
+let position1 = print_init "ClassicParameter" chan position position
 in let position2 = print_typ typ chan position1 position1
 in let position3 = print_id_list identifier_list chan position1 position2
 in print_parameter parameter chan position1 position3

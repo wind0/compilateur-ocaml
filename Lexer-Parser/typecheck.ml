@@ -241,7 +241,7 @@ match stat with
 
 let verif_bloc = fun bloc ->
 let bt = make_block_table bloc
-in List.for_all (fun a -> typc_statement bt a) bloc.statements 
+in bt , List.for_all (fun a -> typc_statement bt a) bloc.statements 
 
 let typc_prog = fun prog ->
 let _ = compteurinitreg 0
