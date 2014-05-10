@@ -124,25 +124,72 @@ match e with
 ESimple se -> Simple_nexpression (replace_simple_expression se table)
 |EOperation se1, op, se2 -> Noperation ((replace_simple_expression se1 table), op, (replace_simple_expression se2 table))
 
-
+let replace_constant = fun c (constants, table) ->
+match c with
+|SignedIdOrNumber s, i_o_n -> let signe = begin match s with
+					Plus -> Int32.one
+					|Minus -> Int32.minus_one
+					end
+				and tmp = begin match i_o_n with
+					BInteger i -> i
+					|BIdentified id -> 
+						let rec slimming = fun c res->
+						begin match c with
+						(Cinteger (a))::t -> slimming t (a::res)
+						|_::t -> slimming t res
+						| [] -> res
+						end
+						in let nconsts = slimming constants
+						in List.assoc id nconsts
+					end
+				in Int32.mul signe tmp
+|IdOrNumber i_o_n -> begin match i_o_n with
+				BInteger i -> i
+				|BIdentified id -> 
+					let rec slimming = fun c res->
+					begin match c with
+					(Cinteger (a))::t -> slimming t (a::res)
+					|_::t -> slimming t res
+					| [] -> res
+					end
+					in let nconsts = slimming constants
+					in List.assoc id nconsts
+				end
+|CString _ -> failwith("Case Nightmare Green")
 
 (****************************Statement Refactor*************************)
 
-let replace_statement = fun stat table ->
+let replace_statement = fun stat (constants,table) ->
 match stat with
 Affect v_or_id, expr -> begin match v_or_id with
-			Id2 (id) -> RegWrite (replace_id id table), expr
-			|Variable var -> RegWrite (replace_var var table), expr
+			Id2 (id) -> RegWrite (replace_id id table), replace_expression expr
+			|Variable var -> RegWrite (replace_var var table), replace_expression expr
 			end
 |Embedded l-> List.flatten (List.map replace_statement l)
 |IfThen expr, s -> let label1 = Int64.of_int (compteurlabels 1)
 		   and label2 = Int64.of_int (compteurlabels 1)
-		   in (Jump (expr, label1, label2))::(Label label1)@(replace_statement s)@[Label label2]
+		   in (Jump (replace_expression expr, label1, label2))::(Label label1)@(replace_statement s)@[Label label2]
 |IfThenElse expr, s1, s2 -> let label1 = Int64.of_int (compteurlabels 1)
 		   and label2 = Int64.of_int (compteurlabels 1)
-		   in (Jump (expr, label1, label2))::(Label label1)@(replace_statement s1)@[Label label2]@(replace_statement s2)
-|While expr, s -> (*glob this*)
-
+		   in (Jump (replace_expression expr, label1, label2))::(Label label1)@(replace_statement s1)@[Label label2]@(replace_statement s2)
+|While expr, s -> (***************HERE************)
+|Case expr, l ->
+		let new_exp = replace_expression expr
+		and fin = Int64.of_int (compteurlabel 1)
+		in 
+			let rec aux1 = fun liste1 res1
+			begin match liste1 with
+			(cl, s)::t1 -> let label = Int64.of_int (compteurlabel 1)
+				in let rec aux2 = fun liste2 res2
+				match liste2 with 
+				h::t2 -> let tmp = replace_constant h
+					and label1 = Int64.of_int (compteurlabel 1)
+					in let expr1 =	Noperation(NUSigned ((NExpression expr,[]),[]), Eq, NUSigned ((NConst tmp,[]),[]))
+					in aux2 t res2@[Label label1]@[Jump expr1,label,(Int64.add label1 Int64.one)]
+				| [] -> res
+				in aux1 t1 res1@(aux2 cl [])@[Label label]@(replace_statement s)@[Goto fin] 
+			|[] -> res1
+			in (aux1 l [])@[Label fin]
 
 
 

@@ -22,11 +22,12 @@ and nexpression =
 
 
 and nfactor = 
-|Const of int32
-|BoolCont of bool
-|Var of nvariable
-|Expression of nexpression
-|Neg_factor of nfactor
+|NConst of int32
+|NString of string (*I don't get constants*)
+|NBoolCont of bool
+|NVar of nvariable
+|NExpression of nexpression
+|NNeg_factor of nfactor
 
 
 
@@ -61,10 +62,10 @@ type label = int64
 (*expressions not replaced by i_expression for now*)
 type i_instruction = 
  Label of label
-|RegWrite of int32 * expression
-|Woopwoop of expression * expression
-|Jump of expression * label * label
+|RegWrite of int32 * nexpression
+|Woopwoop of nexpression * nexpression
+|Jump of nexpression * label * label
 |Goto of label
-|ProcCall of frame * i_expression list
-|FunCall of expression * frame * expression list
+|ProcCall of frame * nexpression list
+|FunCall of nexpression * frame * nexpression list
 
