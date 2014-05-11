@@ -13,9 +13,11 @@ ocamllex lexer.mll
 ocamlc -c parserFinal.mli 
 ocamlc -c lexer.ml 
 ocamlc -c parserFinal.ml 
+ocamlc -c Frame.mli
+ocamlc -c intermediaire.ml
 ocamlc -c main.ml 
 mv *.cm* module
-ocamlc -o main -I module error.cmo astprinter.cmo compteur.cmo typecheck.cmo lexer.cmo parserFinal.cmo main.cmo
+ocamlc -o main -I module error.cmo astprinter.cmo compteur.cmo typecheck.cmo lexer.cmo parserFinal.cmo intermediaire.cmo main.cmo
 ./main
 dot -Tpng output.dot > output.png
 rm test

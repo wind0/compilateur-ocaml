@@ -34,7 +34,7 @@ type procedure_table_p = identifier list
 type parameter_tuple = table_symbol * function_table_p * variable_table * procedure_table_p
 
 type procedure_table = identifier * parameter_tuple
-type function_table = identifier * typ2 * parameter_tuple
+type function_table = identifier * typ2 * parameter_tuple * int32
 
 (*associe une liste d'identifiant et un type à une liste de (identifiant,type, regnum) *)
 let rec make_my_list_rec = fun id_list typ res->
@@ -152,7 +152,7 @@ TypInteger -> TypInteger2
 |TypBoolean -> TypBoolean2
 | _ -> failwith("WTF DID YOU DO!")
 in 
-(func.func_name, tmp ,create_parameter_list func.func_parameters)
+(func.func_name, tmp ,create_parameter_list func.func_parameters, Int32.of_int(compteur_reg 1))
 
 
 (**************Let us start!************)
@@ -184,7 +184,13 @@ let simple_table = fun table ->
 List.map (function (a,b,_) -> match b with
 				TypInteger2 -> a, TypInteger
 				|TypBoolean2 -> a, TypBoolean
-				| _ -> failwith("merde") ) table
+				| _ -> failwith("nope") ) table
+let simple_table2 = fun table ->
+List.map (function (a,b,_,_) -> match b with
+				TypInteger2 -> a, TypInteger
+				|TypBoolean2 -> a, TypBoolean
+				| _ -> failwith("nope") ) table
+
 
 let rec typc_exp = fun expected bt exp ->
 match expected, exp with
@@ -226,7 +232,7 @@ match expected, terme with
 |TypInteger, Neg_factor _ -> failwith("negation of an integer")
 |_ , Brackets _ -> failwith("No brackets for now, sorry")
 |_, Var (v,_) -> List.assoc v (simple_table bt.my_vars)
-|_, Function (i,_) -> 	let ft = simple_table bt.my_funcs
+|_, Function (i,_) -> 	let ft = simple_table2 bt.my_funcs
 			in List.assoc i ft
 |_, Expression a -> typc_exp expected bt a 
 

@@ -1,6 +1,7 @@
+open AST
 type frame = {
-entry_lbl : int32;
-return_lbl : int32;
+entry_lbl : int64;
+return_lbl : int64;
 args_reg : int32 list;
 res_reg : int32;
 size_stack : int32;	(*=0*)
@@ -19,6 +20,7 @@ and simple_nexpression =
 and nexpression = 
 |Simple_nexpression of simple_nexpression
 |Noperation of simple_nexpression * log_bin_op * simple_nexpression
+|Register of int32
 
 
 and nfactor = 
